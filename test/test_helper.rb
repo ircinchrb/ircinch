@@ -1,17 +1,17 @@
+# frozen_string_literal: true
+
 if ENV["SIMPLECOV"]
   begin
-    require 'simplecov'
+    require "simplecov"
     SimpleCov.start
   rescue LoadError
   end
 end
 
-unless Object.const_defined? 'Cinch'
-  $:.unshift File.expand_path('../../lib', __FILE__)
-  require 'cinch'
-end
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+require "ircinch"
 
-require 'minitest/autorun'
+require "minitest/autorun"
 
 class TestCase < MiniTest::Test
   def self.test(name, &block)
