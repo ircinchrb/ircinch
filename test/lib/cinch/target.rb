@@ -1,5 +1,7 @@
+# frozen_string_literal: true
 # coding: utf-8
-require 'helper'
+
+require_relative "../../test_helper"
 
 class TargetTest < TestCase
   module MessageSplit

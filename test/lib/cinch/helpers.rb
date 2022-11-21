@@ -1,4 +1,6 @@
-require "helper"
+# frozen_string_literal: true
+
+require_relative "../../test_helper"
 
 class HelperTest < TestCase
   test "Sanitize should remove newlines" do

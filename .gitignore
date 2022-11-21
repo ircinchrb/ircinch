@@ -1,9 +1,12 @@
-*~
-coverage
-doc
-pkg
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/spec/reports/
+/tmp/
 *.gem
-.yardoc/
 .ruby-gemset
 .ruby-version
 Gemfile.lock
