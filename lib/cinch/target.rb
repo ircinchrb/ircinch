@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   # @since 2.0.0
   class Target
@@ -9,7 +11,7 @@ module Cinch
     attr_reader :bot
     def initialize(name, bot)
       @name = name
-      @bot  = bot
+      @bot = bot
     end
 
     # Sends a NOTICE to the target.
@@ -34,7 +36,7 @@ module Cinch
       # method
       text = text.to_s
       split_start = @bot.config.message_split_start || ""
-      split_end   = @bot.config.message_split_end   || ""
+      split_end = @bot.config.message_split_end || ""
       command = notice ? "NOTICE" : "PRIVMSG"
       prefix = ":#{@bot.mask} #{command} #{@name} :"
 
@@ -42,7 +44,7 @@ module Cinch
         splitted = split_message(line, prefix, split_start, split_end)
 
         splitted[0, (@bot.config.max_messages || splitted.size)].each do |string|
-          @bot.irc.send("#{command} #@name :#{string}")
+          @bot.irc.send("#{command} #{@name} :#{string}")
         end
       end
     end
@@ -95,7 +97,6 @@ module Cinch
       send(*args)
     end
 
-
     # Like {#safe_msg} but for notices.
     #
     # @return (see #safe_msg)
@@ -113,7 +114,7 @@ module Cinch
     # @see #safe_action
     def action(text)
       line = text.to_s.each_line.first.chomp
-      @bot.irc.send("PRIVMSG #@name :\001ACTION #{line}\001")
+      @bot.irc.send("PRIVMSG #{@name} :\001ACTION #{line}\001")
     end
 
     # Like {#action}, but remove any non-printable characters from
@@ -163,12 +164,11 @@ module Cinch
         left <=> other.name.irc_downcase(casemapping)
       elsif other.is_a?(String)
         left <=> other.irc_downcase(casemapping)
-      else
-        nil
       end
     end
 
     private
+
     def split_message(msg, prefix, split_start, split_end)
       max_bytesize = 510 - prefix.bytesize
       max_bytesize_without_end = max_bytesize - split_end.bytesize
@@ -180,20 +180,20 @@ module Cinch
       splitted = []
       while msg.bytesize > max_bytesize_without_end
         acc = 0
-        acc_rune_sizes = msg.each_char.map {|ch|
+        acc_rune_sizes = msg.each_char.map { |ch|
           acc += ch.bytesize
         }
 
-        max_rune = acc_rune_sizes.rindex {|bs| bs <= max_bytesize_without_end} || 0
+        max_rune = acc_rune_sizes.rindex { |bs| bs <= max_bytesize_without_end } || 0
         r = [msg.rindex(/\s/, max_rune) || (max_rune + 1), 1].max
 
         splitted << (msg[0...r] + split_end)
-        msg = split_start.tr(" ", "\cz") + msg[r..-1].lstrip
+        msg = split_start.tr(" ", "\cz") + msg[r..].lstrip
       end
       splitted << msg
 
       # clean string from any substitute characters
-      splitted.map {|string| string.tr("\cz", " ")}
+      splitted.map { |string| string.tr("\cz", " ") }
     end
   end
 end

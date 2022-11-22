@@ -1,4 +1,6 @@
-require "cinch/cached_list"
+# frozen_string_literal: true
+
+require_relative "cached_list"
 
 module Cinch
   # @since 2.0.0
@@ -81,7 +83,7 @@ module Cinch
     # @api private
     # @return [void]
     def delete(user)
-      @cache.delete_if {|n, u| u == user }
+      @cache.delete_if { |n, u| u == user }
     end
   end
 end

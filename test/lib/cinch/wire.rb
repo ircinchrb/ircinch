@@ -5,16 +5,19 @@ require_relative "../../test_helper"
 class WireTest < TestCase
   def setup
     @bot = Cinch::Bot.new do
-      self.loggers.clear
+      loggers.clear
       @irc = Cinch::IRC.new(self)
       @irc.setup
       @name = "cinch"
       # stub these so that they work without a real server connection
-      def user
-        "test"
-      end
-      def host
-        "testhost"
+      class << self
+        def user
+          "test"
+        end
+
+        def host
+          "testhost"
+        end
       end
     end
     # put a StringIO in place of a socket
@@ -27,7 +30,7 @@ class WireTest < TestCase
 
   # return all the data sent over the wire
   def sent
-    while !@to_process.empty?
+    until @to_process.empty?
       @queue.__send__(:process_one)
     end
     @io.rewind
@@ -49,6 +52,4 @@ class WireTest < TestCase
     @bot.irc.send("first\r\nsecond")
     assert_equal "first\r\n", sent
   end
-
 end
-

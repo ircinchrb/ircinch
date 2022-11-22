@@ -1,4 +1,7 @@
-require "cinch/logger"
+# frozen_string_literal: true
+
+require_relative "../logger"
+
 module Cinch
   class Logger
     # This logger logs all incoming messages in the format of zcbot.
@@ -14,6 +17,7 @@ module Cinch
       end
 
       private
+
       def format_incoming(message)
         Time.now.strftime("%m/%d/%Y %H:%M:%S ") + message
       end

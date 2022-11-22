@@ -1,4 +1,4 @@
-require 'cinch'
+require "ircinch"
 
 class Seen
   class SeenStruct < Struct.new(:who, :where, :what, :time)
@@ -9,7 +9,7 @@ class Seen
 
   include Cinch::Plugin
   listen_to :channel
-  match /seen (.+)/
+  match(/seen (.+)/)
 
   def initialize(*args)
     super
@@ -35,11 +35,10 @@ end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server   = 'irc.freenode.org'
-    c.channels = ["#cinch-bots"]
-    c.plugins.plugins  = [Seen]
+    c.server = "irc.libera.chat"
+    c.channels = ["#ircinch-bots"]
+    c.plugins.plugins = [Seen]
   end
 end
 
 bot.start
-

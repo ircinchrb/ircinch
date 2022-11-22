@@ -1,4 +1,4 @@
-require 'cinch'
+require "ircinch"
 
 class DiceRoll
   include Cinch::Plugin
@@ -8,8 +8,8 @@ class DiceRoll
   def execute(m, repeats, rolls, sides, offset_op, offset)
     repeats = repeats.to_i
     repeats = 1 if repeats < 1
-    rolls   = rolls.to_i
-    rolls   = 1 if rolls < 1
+    rolls = rolls.to_i
+    rolls = 1 if rolls < 1
 
     total = 0
 
@@ -29,8 +29,8 @@ end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server = 'irc.freenode.org'
-    c.channels = ['#cinch-bots']
+    c.server = "irc.libera.chat"
+    c.channels = ["#ircinch-bots"]
     c.plugins.plugins = [DiceRoll]
   end
 end

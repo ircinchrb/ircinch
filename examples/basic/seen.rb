@@ -1,4 +1,4 @@
-require 'cinch'
+require "ircinch"
 
 class Seen < Struct.new(:who, :where, :what, :time)
   def to_s
@@ -6,17 +6,19 @@ class Seen < Struct.new(:who, :where, :what, :time)
   end
 end
 
-$users = {}
-
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server   = 'irc.freenode.org'
-    c.channels = ["#cinch-bots"]
+    c.server = "irc.libera.chat"
+    c.channels = ["#ircinch-bots"]
+  end
+
+  def users
+    {}
   end
 
   # Only log channel messages
   on :channel do |m|
-    $users[m.user.nick] = Seen.new(m.user.nick, m.channel, m.message, Time.new)
+    users[m.user.nick] = Seen.new(m.user.nick, m.channel, m.message, Time.new)
   end
 
   on :channel, /^!seen (.+)/ do |m, nick|
@@ -24,8 +26,8 @@ bot = Cinch::Bot.new do
       m.reply "That's me!"
     elsif nick == m.user.nick
       m.reply "That's you!"
-    elsif $users.key?(nick)
-      m.reply $users[nick].to_s
+    elsif users.key?(nick)
+      m.reply users[nick].to_s
     else
       m.reply "I haven't seen #{nick}"
     end
@@ -33,4 +35,3 @@ bot = Cinch::Bot.new do
 end
 
 bot.start
-

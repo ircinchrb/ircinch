@@ -1,6 +1,8 @@
-require "cinch/sasl/diffie_hellman"
-require "cinch/sasl/plain"
-require "cinch/sasl/dh_blowfish"
+# frozen_string_literal: true
+
+require_relative "sasl/diffie_hellman"
+require_relative "sasl/plain"
+require_relative "sasl/dh_blowfish"
 
 module Cinch
   # SASL is a modern way of authentication in IRC, solving problems
@@ -12,7 +14,7 @@ module Cinch
   #
   # # Supported Mechanisms
   #
-  # - {SASL::DH_Blowfish DH-BLOWFISH}
+  # - {SASL::DhBlowfish DH-BLOWFISH}
   # - {SASL::Plain PLAIN}
   #
   # # Configuration

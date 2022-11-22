@@ -7,4 +7,3 @@ class HelperTest < TestCase
     assert_equal "ab", Cinch::Helpers.sanitize("a\r\nb")
   end
 end
-

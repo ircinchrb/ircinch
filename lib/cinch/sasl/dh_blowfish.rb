@@ -1,6 +1,9 @@
-require "openssl"
+# frozen_string_literal: true
+
 require "base64"
-require "cinch/sasl/mechanism"
+require "openssl"
+
+require_relative "mechanism"
 
 module Cinch
   module SASL
@@ -8,7 +11,7 @@ module Cinch
     # the Blowfish encryption algorithm. Due to its nature it is more
     # secure than transmitting the password unencrypted and can be
     # used on potentially insecure networks.
-    class DH_Blowfish < Mechanism
+    class DhBlowfish < Mechanism
       class << self
         # @return [String]
         def mechanism_name
@@ -17,17 +20,17 @@ module Cinch
 
         # @return [Array(Numeric, Numeric, Numeric)] p, g and y for DH
         def unpack_payload(payload)
-          pgy     = []
+          pgy = []
           payload = payload.dup
 
           3.times do
-            size = payload.unpack("n").first
+            size = payload.unpack1("n")
             payload.slice!(0, 2)
-            pgy << payload.unpack("a#{size}").first
+            pgy << payload.unpack1("a#{size}")
             payload.slice!(0, size)
           end
 
-          pgy.map {|i| OpenSSL::BN.new(i, 2).to_i}
+          pgy.map { |i| OpenSSL::BN.new(i, 2).to_i }
         end
 
         # @param [String] user
@@ -38,23 +41,22 @@ module Cinch
           # duplicate the passed strings because we are modifying them
           # later and they might come from the configuration store or
           # similar
-          user     = user.dup
+          user = user.dup
           password = password.dup
 
           data = Base64.decode64(payload).force_encoding("ASCII-8BIT")
 
           p, g, y = unpack_payload(data)
 
-          dh      = DiffieHellman.new(p, g, 23)
+          dh = DiffieHellman.new(p, g, 23)
           pub_key = dh.generate
-          secret  = OpenSSL::BN.new(dh.secret(y).to_s).to_s(2)
-          public  = OpenSSL::BN.new(pub_key.to_s).to_s(2)
+          secret = OpenSSL::BN.new(dh.secret(y).to_s).to_s(2)
+          public = OpenSSL::BN.new(pub_key.to_s).to_s(2)
 
           # Pad password so its length is a multiple of the cipher block size
           password << "\0"
           password << "." * (8 - (password.size % 8))
 
-          crypted = ""
           cipher = OpenSSL::Cipher.new("BF-ECB")
           cipher.key_len = 32 # OpenSSL's default of 16 doesn't work
           cipher.encrypt

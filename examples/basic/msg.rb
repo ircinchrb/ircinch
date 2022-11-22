@@ -1,10 +1,10 @@
-require 'cinch'
+require "ircinch"
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server   = "irc.freenode.org"
-    c.nick     = "CinchBot"
-    c.channels = ["#cinch-bots"]
+    c.server = "irc.libera.chat"
+    c.nick = "IrCinchBot"
+    c.channels = ["#ircinch-bots"]
   end
 
   on :message, /^!msg (.+?) (.+)/ do |m, who, text|
@@ -13,4 +13,3 @@ bot = Cinch::Bot.new do
 end
 
 bot.start
-

@@ -1,5 +1,7 @@
-require "cinch/dcc/outgoing"
-require "cinch/dcc/incoming"
+# frozen_string_literal: true
+
+require_relative "dcc/incoming"
+require_relative "dcc/outgoing"
 
 module Cinch
   # Cinch supports the following DCC commands:

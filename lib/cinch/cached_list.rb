@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   # @api private
   # @since 2.0.0

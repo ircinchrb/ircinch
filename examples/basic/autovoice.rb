@@ -1,4 +1,4 @@
-require 'cinch'
+require "ircinch"
 
 # Give this bot ops in a channel and it'll auto voice
 # visitors
@@ -10,10 +10,10 @@ require 'cinch'
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.nick            = "cinch_autovoice"
-    c.server          = "irc.freenode.org"
-    c.verbose         = true
-    c.channels        = ["#cinch-bots"]
+    c.nick = "ircinch_autovoice"
+    c.server = "irc.libera.chat"
+    c.verbose = true
+    c.channels = ["#ircinch-bots"]
   end
 
   on :join do |m|
@@ -25,7 +25,7 @@ bot = Cinch::Bot.new do
   on :channel, /^!autovoice (on|off)$/ do |m, option|
     @autovoice = option == "on"
 
-    m.reply "Autovoice is now #{@autovoice ? 'enabled' : 'disabled'}"
+    m.reply "Autovoice is now #{@autovoice ? "enabled" : "disabled"}"
   end
 end
 

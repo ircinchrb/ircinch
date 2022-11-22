@@ -1,4 +1,4 @@
-require "thread"
+# frozen_string_literal: true
 
 # Like Ruby's Queue class, but allowing both pushing and unshifting
 # objects.
@@ -9,17 +9,17 @@ class OpenEndedQueue < Queue
   # @return [void]
   def unshift(obj)
     t = nil
-    @mutex.synchronize{
+    @mutex.synchronize {
       @que.unshift obj
       begin
         t = @waiting.shift
-        t.wakeup if t
+        t&.wakeup
       rescue ThreadError
         retry
       end
     }
     begin
-      t.run if t
+      t&.run
     rescue ThreadError
     end
   end

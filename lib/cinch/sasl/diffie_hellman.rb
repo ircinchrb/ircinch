@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   module SASL
     class DiffieHellman
@@ -24,13 +26,14 @@ module Cinch
       end
 
       private
+
       # validate a public key
       def valid?
-        @e && @e.between?(2, @p - 2) && bits_set(@e) > 1
+        @e&.between?(2, @p - 2) && bits_set(@e) > 1
       end
 
       def bits_set(e)
-        ("%b" % e).count('1')
+        ("%b" % e).count("1")
       end
 
       def mod_exp(b, e, m)
@@ -40,7 +43,7 @@ module Cinch
           e = e >> 1
           b = (b * b) % m
         end
-        return result
+        result
       end
     end
   end

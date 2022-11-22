@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   # LogFilter describes an interface for filtering log messages before
   # they're printed.

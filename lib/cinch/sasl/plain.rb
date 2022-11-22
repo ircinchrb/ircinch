@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 require "base64"
-require "cinch/sasl/mechanism"
+
+require_relative "mechanism"
 
 module Cinch
   module SASL

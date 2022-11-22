@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module Cinch
   # @since 2.0.0
   class PluginList < Array
     def initialize(bot)
-      @bot     = bot
+      @bot = bot
       super()
     end
 
@@ -25,7 +27,7 @@ module Cinch
     # @since 2.0.0
     def unregister_plugins(plugins)
       if plugins == self
-        plugins = self.dup
+        plugins = dup
       end
       plugins.each { |plugin| unregister_plugin(plugin) }
     end

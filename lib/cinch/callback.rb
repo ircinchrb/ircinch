@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   # Class used for encapsulating handlers to prevent them from
   # overwriting instance variables in {Bot}

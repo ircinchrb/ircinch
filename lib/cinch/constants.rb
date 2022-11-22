@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   # All standard and some non-standard numeric replies used by the IRC
   # protocol.
@@ -33,16 +35,16 @@ module Cinch
 
     # PING or PONG message missing the originator parameter which is
     # required since these commands must work without valid prefixes.
-    ERR_NOORIGIN     = 409
+    ERR_NOORIGIN = 409
 
     # @todo Document this constant
-    ERR_NORECIPIENT  = 411
+    ERR_NORECIPIENT = 411
 
     # @todo Document this constant
     ERR_NOTEXTTOSEND = 412
 
     # @todo Document this constant
-    ERR_NOTOPLEVEL   = 413
+    ERR_NOTOPLEVEL = 413
 
     # 412 - 414 are returned by PRIVMSG to indicate that the message
     # wasn't delivered for some reason. ERR_NOTOPLEVEL and
@@ -134,22 +136,22 @@ module Cinch
     ERR_YOUREBANNEDCREEP = 465
 
     # @todo Document this constant
-    ERR_KEYSET           = 467
+    ERR_KEYSET = 467
 
     # @todo Document this constant
-    ERR_CHANNELISFULL    = 471
+    ERR_CHANNELISFULL = 471
 
     # @todo Document this constant
-    ERR_UNKNOWNMODE      = 472
+    ERR_UNKNOWNMODE = 472
 
     # @todo Document this constant
-    ERR_INVITEONLYCHAN   = 473
+    ERR_INVITEONLYCHAN = 473
 
     # @todo Document this constant
-    ERR_BANNEDFROMCHAN   = 474
+    ERR_BANNEDFROMCHAN = 474
 
     # @todo Document this constant
-    ERR_BADCHANNELKEY    = 475
+    ERR_BADCHANNELKEY = 475
 
     # Any command requiring operator privileges to operate must return
     # this error to indicate the attempt was unsuccessful.
@@ -179,7 +181,7 @@ module Cinch
     ERR_USERSDONTMATCH = 502
 
     # @todo Document this constant
-    RPL_NONE           = 300
+    RPL_NONE = 300
 
     # Reply format used by USERHOST to list replies to the query list.
     RPL_USERHOST = 302
@@ -198,22 +200,22 @@ module Cinch
 
     # Replies RPL_UNAWAY and RPL_NOWAWAY are sent when the client removes
     # and sets an AWAY message
-    RPL_NOWAWAY       = 306
+    RPL_NOWAWAY = 306
 
     # @todo Document this constant
-    RPL_WHOISUSER     = 311
+    RPL_WHOISUSER = 311
 
     # @todo Document this constant
-    RPL_WHOISSERVER   = 312
+    RPL_WHOISSERVER = 312
 
     # @todo Document this constant
     RPL_WHOISOPERATOR = 313
 
     # @todo Document this constant
-    RPL_WHOISIDLE     = 317
+    RPL_WHOISIDLE = 317
 
     # @todo Document this constant
-    RPL_ENDOFWHOIS    = 318
+    RPL_ENDOFWHOIS = 318
 
     # Replies 311 - 313, 317 - 319 are all replies generated in response
     # to a WHOIS message. Given that there are enough parameters present,
@@ -229,7 +231,7 @@ module Cinch
     RPL_WHOISCHANNELS = 319
 
     # @todo Document this constant
-    RPL_WHOWASUSER    = 314
+    RPL_WHOWASUSER = 314
 
     # When replying to a WHOWAS message, a server must use the replies
     # RPL_WHOWASUSER, RPL_WHOISSERVER or ERR_WASNOSUCHNICK for each
@@ -239,22 +241,22 @@ module Cinch
     RPL_ENDOFWHOWAS = 369
 
     # @todo Document this constant
-    RPL_LISTSTART   = 321
+    RPL_LISTSTART = 321
 
     # @todo Document this constant
-    RPL_LIST        = 322
+    RPL_LIST = 322
 
     # Replies RPL_LISTSTART, RPL_LIST, RPL_LISTEND mark the start, actual
     # replies with data and end of the server's response to a LIST
     # command. If there are no channels available to return, only the
     # start and end reply must be sent.
-    RPL_LISTEND       = 323
+    RPL_LISTEND = 323
 
     # @todo Document this constant
     RPL_CHANNELMODEIS = 324
 
     # @todo Document this constant
-    RPL_NOTOPIC       = 331
+    RPL_NOTOPIC = 331
 
     # When sending a TOPIC message to determine the channel topic, one of
     # two replies is sent. If the topic is set, RPL_TOPIC is sent back
@@ -274,9 +276,9 @@ module Cinch
     # revisions) and the &lt;debuglevel&gt; is used to indicate if the
     # server is running in "debug mode".
     #
-    #The "comments" field may contain any comments about the version or
+    # The "comments" field may contain any comments about the version or
     # further version details.
-    RPL_VERSION  = 351
+    RPL_VERSION = 351
 
     # @todo Document this constant
     RPL_WHOREPLY = 352
@@ -286,10 +288,10 @@ module Cinch
     # match to the WHO query. If there is a list of parameters supplied
     # with a WHO message, a RPL_ENDOFWHO must be sent after processing
     # each list item with &lt;name&gt; being the item.
-    RPL_ENDOFWHO  = 315
+    RPL_ENDOFWHO = 315
 
     # @todo Document this constant
-    RPL_NAMREPLY  = 353
+    RPL_NAMREPLY = 353
 
     # @todo Document this constant
     RPL_NAMEREPLY = RPL_NAMREPLY
@@ -307,7 +309,7 @@ module Cinch
     RPL_ENDOFNAMES = 366
 
     # @todo Document this constant
-    RPL_LINKS      = 364
+    RPL_LINKS = 364
 
     # In replying to the LINKS message, a server must send replies back
     # using the RPL_LINKS numeric and mark the end of the list using an
@@ -315,7 +317,7 @@ module Cinch
     RPL_ENDOFLINKS = 365
 
     # @todo Document this constant
-    RPL_BANLIST    = 367
+    RPL_BANLIST = 367
 
     # When listing the active 'bans' for a given channel, a server is
     # required to send the list back using the RPL_BANLIST and
@@ -325,7 +327,7 @@ module Cinch
     RPL_ENDOFBANLIST = 368
 
     # @todo Document this constant
-    RPL_INFO         = 371
+    RPL_INFO = 371
 
     # A server responding to an INFO message is required to send all its
     # 'info' in a series of RPL_INFO messages with a RPL_ENDOFINFO reply
@@ -336,7 +338,7 @@ module Cinch
     RPL_MOTDSTART = 375
 
     # @todo Document this constant
-    RPL_MOTD      = 372
+    RPL_MOTD = 372
 
     # When responding to the MOTD message and the MOTD file is found, the
     # file is displayed line by line, with each line no longer than 80
@@ -354,7 +356,7 @@ module Cinch
     RPL_REHASHING = 382
 
     # @todo Document this constant
-    RPL_QLIST      = 386
+    RPL_QLIST = 386
 
     # @todo Document this constant
     RPL_ENDOFQLIST = 387
@@ -363,13 +365,13 @@ module Cinch
     # using the RPL_TIME format above. The string showing the time need
     # only contain the correct day and time there. There is no further
     # requirement for the time string.
-    RPL_TIME       = 391
+    RPL_TIME = 391
 
     # @todo Document this constant
     RPL_USERSSTART = 392
 
     # @todo Document this constant
-    RPL_USERS      = 393
+    RPL_USERS = 393
 
     # @todo Document this constant
     RPL_ENDOFUSERS = 394
@@ -378,31 +380,31 @@ module Cinch
     # RPL_USERSTART, RPL_USERS, RPL_ENDOFUSERS and RPL_NOUSERS are used.
     # RPL_USERSSTART must be sent first, following by either a sequence of
     # RPL_USERS or a single RPL_NOUSER. Following this is RPL_ENDOFUSERS.
-    RPL_NOUSERS         = 395
+    RPL_NOUSERS = 395
 
     # @todo Document this constant
-    RPL_TRACELINK       = 200
+    RPL_TRACELINK = 200
 
     # @todo Document this constant
     RPL_TRACECONNECTING = 201
 
     # @todo Document this constant
-    RPL_TRACEHANDSHAKE  = 202
+    RPL_TRACEHANDSHAKE = 202
 
     # @todo Document this constant
-    RPL_TRACEUNKNOWN    = 203
+    RPL_TRACEUNKNOWN = 203
 
     # @todo Document this constant
-    RPL_TRACEOPERATOR   = 204
+    RPL_TRACEOPERATOR = 204
 
     # @todo Document this constant
-    RPL_TRACEUSER       = 205
+    RPL_TRACEUSER = 205
 
     # @todo Document this constant
-    RPL_TRACESERVER     = 206
+    RPL_TRACESERVER = 206
 
     # @todo Document this constant
-    RPL_TRACENEWTYPE    = 208
+    RPL_TRACENEWTYPE = 208
 
     # The RPL_TRACE* are all returned by the server in response to the
     # TRACE message. How many are returned is dependent on the the TRACE
@@ -418,7 +420,7 @@ module Cinch
     # the servers themselves along that path. RPL_TRACENEWTYPE is to be
     # used for any connection which does not fit in the other categories
     # but is being displayed anyway.
-    RPL_TRACELOG      = 261
+    RPL_TRACELOG = 261
 
     # @todo Document this constant
     RPL_STATSLINKINFO = 211
@@ -427,47 +429,47 @@ module Cinch
     RPL_STATSCOMMANDS = 212
 
     # @todo Document this constant
-    RPL_STATSCLINE    = 213
+    RPL_STATSCLINE = 213
 
     # @todo Document this constant
-    RPL_STATSNLINE    = 214
+    RPL_STATSNLINE = 214
 
     # @todo Document this constant
-    RPL_STATSILINE    = 215
+    RPL_STATSILINE = 215
 
     # @todo Document this constant
-    RPL_STATSKLINE    = 216
+    RPL_STATSKLINE = 216
 
     # @todo Document this constant
-    RPL_STATSYLINE    = 218
+    RPL_STATSYLINE = 218
 
     # @todo Document this constant
-    RPL_ENDOFSTATS    = 219
+    RPL_ENDOFSTATS = 219
 
     # @todo Document this constant
-    RPL_STATSLLINE    = 241
+    RPL_STATSLLINE = 241
 
     # @todo Document this constant
-    RPL_STATSUPTIME   = 242
+    RPL_STATSUPTIME = 242
 
     # @todo Document this constant
-    RPL_STATSOLINE    = 243
+    RPL_STATSOLINE = 243
 
     # @todo Document this constant
-    RPL_STATSHLINE    = 244
+    RPL_STATSHLINE = 244
 
     # To answer a query about a client's own mode, RPL_UMODEIS is sent
     # back.
-    RPL_UMODEIS       = 221
+    RPL_UMODEIS = 221
 
     # @todo Document this constant
-    RPL_LUSERCLIENT   = 251
+    RPL_LUSERCLIENT = 251
 
     # @todo Document this constant
-    RPL_LUSEROP       = 252
+    RPL_LUSEROP = 252
 
     # @todo Document this constant
-    RPL_LUSERUNKNOWN  = 253
+    RPL_LUSERUNKNOWN = 253
 
     # @todo Document this constant
     RPL_LUSERCHANNELS = 254
@@ -477,10 +479,10 @@ module Cinch
     # RPL_LUSERCHANNELS and RPL_LUSERME. When replying, a server must send
     # back RPL_LUSERCLIENT and RPL_LUSERME. The other replies are only
     # sent back if a non-zero count is found for them.
-    RPL_LUSERME   = 255
+    RPL_LUSERME = 255
 
     # @todo Document this constant
-    RPL_ADMINME   = 256
+    RPL_ADMINME = 256
 
     # @todo Document this constant
     RPL_ADMINLOC1 = 257
@@ -498,19 +500,19 @@ module Cinch
     RPL_ADMINEMAIL = 259
 
     # @todo Document this constant
-    RPL_MONONLINE    = 730
+    RPL_MONONLINE = 730
 
     # @todo Document this constant
-    RPL_MONOFFLINE   = 731
+    RPL_MONOFFLINE = 731
 
     # @todo Document this constant
-    RPL_MONLIST      = 732
+    RPL_MONLIST = 732
 
     # @todo Document this constant
     RPL_ENDOFMONLIST = 733
 
     # @todo Document this constant
-    ERR_MONLISTFULL  = 734
+    ERR_MONLISTFULL = 734
 
     # @todo Document this constant
     RPL_SASLLOGIN = 900

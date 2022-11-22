@@ -1,4 +1,6 @@
-require "cinch/cached_list"
+# frozen_string_literal: true
+
+require_relative "cached_list"
 
 module Cinch
   # @since 2.0.0

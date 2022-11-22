@@ -1,16 +1,16 @@
-require 'cinch'
-require 'open-uri'
-require 'nokogiri'
-require 'cgi'
+require "cgi"
+require "ircinch"
+require "nokogiri"
+require "open-uri"
 
 # This bot connects to urban dictionary and returns the first result
 # for a given query, replying with the result directly to the sender
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server   = "irc.freenode.net"
-    c.nick     = "MrCinch"
-    c.channels = ["#cinch-bots"]
+    c.server = "irc.libera.chat"
+    c.nick = "MrIrCinch"
+    c.channels = ["#ircinch-bots"]
   end
 
   helpers do
@@ -19,7 +19,9 @@ bot = Cinch::Bot.new do
     # can be done.. it works!
     def urban_dict(query)
       url = "http://www.urbandictionary.com/define.php?term=#{CGI.escape(query)}"
-      CGI.unescape_html Nokogiri::HTML(open(url)).css("div.meaning").first.text.gsub(/\s+/, ' ').strip rescue nil
+      CGI.unescape_html Nokogiri::HTML(URI.parse(url)).open.css("div.meaning").first.text.gsub(/\s+/, " ").strip
+    rescue
+      nil
     end
   end
 
@@ -31,5 +33,4 @@ end
 bot.start
 
 # injekt> !urban cinch
-# MrCinch> injekt: describing an action that's extremely easy.
-
+# MrIrCinch> injekt: describing an action that's extremely easy.

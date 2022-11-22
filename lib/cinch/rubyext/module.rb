@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Extensions to Ruby's Module class.
 class Module
   # Like `attr_reader`, but for defining a synchronized attribute

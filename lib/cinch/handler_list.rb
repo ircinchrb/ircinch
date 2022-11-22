@@ -1,6 +1,8 @@
-require "thread"
+# frozen_string_literal: true
+
 require "set"
-require "cinch/cached_list"
+
+require_relative "cached_list"
 
 module Cinch
   # @since 2.0.0
@@ -8,7 +10,7 @@ module Cinch
     include Enumerable
 
     def initialize
-      @handlers = Hash.new {|h,k| h[k] = []}
+      @handlers = Hash.new { |h, k| h[k] = [] }
       @mutex = Mutex.new
     end
 
@@ -33,14 +35,14 @@ module Cinch
     # @api private
     # @return [Array<Handler>]
     def find(type, msg = nil)
-      if handlers = @handlers[type]
+      if (handlers = @handlers[type])
         if msg.nil?
           return handlers
         end
 
         handlers = handlers.select { |handler|
           msg.match(handler.pattern.to_r(msg), type, handler.strip_colors)
-        }.group_by {|handler| handler.group}
+        }.group_by { |handler| handler.group }
 
         handlers.values_at(*(handlers.keys - [nil])).map(&:first) + (handlers[nil] || [])
       end
@@ -55,17 +57,17 @@ module Cinch
     def dispatch(event, msg = nil, *arguments)
       threads = []
 
-      if handlers = find(event, msg)
+      if (handlers = find(event, msg))
         already_run = Set.new
         handlers.each do |handler|
           next if already_run.include?(handler.block)
           already_run << handler.block
           # calling Message#match multiple times is not a problem
           # because we cache the result
-          if msg
-            captures = msg.match(handler.pattern.to_r(msg), event, handler.strip_colors).captures
+          captures = if msg
+            msg.match(handler.pattern.to_r(msg), event, handler.strip_colors).captures
           else
-            captures = []
+            []
           end
 
           threads << handler.call(msg, captures, arguments)

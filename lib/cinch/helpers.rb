@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# frozen_string_literal: true
+
 module Cinch
   # The Helpers module contains a number of methods whose purpose is
   # to make writing plugins easier by hiding parts of the API. The
@@ -91,12 +92,12 @@ module Cinch
     # @return [Timer]
     # @since 2.0.0
     def Timer(interval, options = {}, &block)
-      options = {:method => :timer, :threaded => true, :interval => interval}.merge(options)
-      block ||= self.method(options[:method])
-      timer   = Cinch::Timer.new(bot, options, &block)
+      options = {method: :timer, threaded: true, interval: interval}.merge(options)
+      block ||= method(options[:method])
+      timer = Cinch::Timer.new(bot, options, &block)
       timer.start
 
-      if self.respond_to?(:timers)
+      if respond_to?(:timers)
         timers << timer
       end
 
@@ -119,17 +120,15 @@ module Cinch
     # @return [void]
     # @since 2.0.0
     def rescue_exception
-      begin
-        yield
-      rescue => e
-        bot.loggers.exception(e)
-      end
+      yield
+    rescue => e
+      bot.loggers.exception(e)
     end
 
     # (see Logger#log)
     def log(messages, event = :debug, level = event)
-      if self.is_a?(Cinch::Plugin)
-        messages = Array(messages).map {|m|
+      if is_a?(Cinch::Plugin)
+        messages = Array(messages).map { |m|
           "[#{self.class}] " + m
         }
       end
@@ -218,7 +217,7 @@ module Cinch
     # @return [String] The filtered string
     # @since 2.2.0
     def self.sanitize(string)
-      string.gsub(/[\x00-\x08\x0a-\x1f\x7f]/, '')
+      string.gsub(/[\x00-\x08\x0a-\x1f\x7f]/, "")
     end
 
     # (see Formatting.unformat)

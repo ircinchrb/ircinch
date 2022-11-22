@@ -1,4 +1,4 @@
-require 'cinch'
+require "ircinch"
 
 class DirectAddressing
   include Cinch::Plugin
@@ -9,7 +9,7 @@ class DirectAddressing
   #
   # The reason we are using a lambda is that the bot's nick can change
   # and the prefix has to be up to date.
-  set :prefix, lambda{ |m| Regexp.new("^" + Regexp.escape(m.bot.nick + ": " ))}
+  set :prefix, lambda { |m| Regexp.new("^" + Regexp.escape(m.bot.nick + ": ")) }
 
   match "hello", method: :greet
   def greet(m)
@@ -24,10 +24,10 @@ end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.nick            = "cinch_lambda"
-    c.server          = "irc.freenode.org"
-    c.channels        = ["#cinch-bots"]
-    c.verbose         = true
+    c.nick = "ircinch_lambda"
+    c.server = "irc.libera.chat"
+    c.channels = ["#ircinch-bots"]
+    c.verbose = true
     c.plugins.plugins = [DirectAddressing]
   end
 end

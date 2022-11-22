@@ -1,5 +1,6 @@
-require 'open-uri'
-require 'cinch'
+require "cgi"
+require "ircinch"
+require "open-uri"
 
 class TinyURL
   include Cinch::Plugin
@@ -7,8 +8,8 @@ class TinyURL
   listen_to :channel
 
   def shorten(url)
-    url = open("http://tinyurl.com/api-create.php?url=#{URI.escape(url)}").read
-    url == "Error" ? nil : url
+    url = URI.parse("http://tinyurl.com/api-create.php?url=#{CGI.escape(url)}").open
+    (url == "Error") ? nil : url
   rescue OpenURI::HTTPError
     nil
   end
@@ -24,8 +25,8 @@ end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server = "irc.freenode.org"
-    c.channels = ["#cinch-bots"]
+    c.server = "irc.libera.chat"
+    c.channels = ["#ircinch-bots"]
     c.plugins.plugins = [TinyURL]
   end
 end

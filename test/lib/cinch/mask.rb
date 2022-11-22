@@ -3,19 +3,19 @@
 require_relative "../../test_helper"
 
 class MaskTest < TestCase
-  DefaultMask = "foo*!bar?@baz"
+  DEFAULT_MASK = "foo*!bar?@baz"
   def setup
-    @mask = Cinch::Mask.new(DefaultMask.dup)
+    @mask = Cinch::Mask.new(DEFAULT_MASK.dup)
   end
   test "Two equal masks should be equal" do
-    mask2 = Cinch::Mask.new(DefaultMask.dup)
+    mask2 = Cinch::Mask.new(DEFAULT_MASK.dup)
 
     assert @mask == mask2
     assert @mask.eql?(mask2)
   end
 
   test "A Mask's hash should depend on the mask" do
-    mask2 = Cinch::Mask.new(DefaultMask.dup)
+    mask2 = Cinch::Mask.new(DEFAULT_MASK.dup)
 
     assert_equal @mask.hash, mask2.hash
   end
@@ -51,11 +51,11 @@ class MaskTest < TestCase
   end
 
   test "A mask's string representation should equal the original mask string" do
-    assert_equal DefaultMask.dup, @mask.to_s
+    assert_equal DEFAULT_MASK.dup, @mask.to_s
   end
 
   test "A Mask can be created from Strings" do
-    assert_equal @mask, Cinch::Mask.from(DefaultMask.dup)
+    assert_equal @mask, Cinch::Mask.from(DEFAULT_MASK.dup)
   end
 
   test "A Mask can be created from objects that have a mask" do

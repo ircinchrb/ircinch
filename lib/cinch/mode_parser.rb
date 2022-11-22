@@ -1,10 +1,12 @@
-require "cinch/exceptions"
+# frozen_string_literal: true
+
+require_relative "exceptions"
 
 module Cinch
   # @api private
   # @since 1.1.0
   module ModeParser
-    ErrEmptyString = "Empty mode string"
+    ERR_EMPTY_STRING = "Empty mode string"
     MalformedError = Struct.new(:modes)
     EmptySequenceError = Struct.new(:modes)
     NotEnoughParametersError = Struct.new(:op)
@@ -17,11 +19,11 @@ module Cinch
     # @return [(Array<(Symbol<:add, :remove>, String<char>, String<param>), foo)]
     def self.parse_modes(modes, params, param_modes = {})
       if modes.size == 0
-        return nil, ErrEmptyString
+        return nil, ERR_EMPTY_STRING
         # raise Exceptions::InvalidModeString, 'Empty mode string'
       end
 
-      if modes[0] !~ /[+-]/
+      if !/[+-]/.match?(modes[0])
         return nil, MalformedError.new(modes)
         # raise Exceptions::InvalidModeString, "Malformed modes string: %s" % modes
       end
@@ -32,18 +34,18 @@ module Cinch
       count = -1
 
       modes.each_char do |ch|
-        if ch =~ /[+-]/
+        if /[+-]/.match?(ch)
           if count == 0
             return changes, EmptySequenceError.new(modes)
             # raise Exceptions::InvalidModeString, 'Empty mode sequence: %s' % modes
           end
 
           direction = case ch
-                      when "+"
-                        :add
-                      when "-"
-                        :remove
-                      end
+          when "+"
+            :add
+          when "-"
+            :remove
+          end
           count = 0
         else
           param = nil
@@ -70,7 +72,7 @@ module Cinch
         # raise Exceptions::InvalidModeString, 'Empty mode sequence: %s' % modes
       end
 
-      return changes, nil
+      [changes, nil]
     end
   end
 end

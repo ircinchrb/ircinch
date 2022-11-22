@@ -1,4 +1,6 @@
-require "cinch/helpers"
+# frozen_string_literal: true
+
+require_relative "helpers"
 
 module Cinch
   # This class represents the core of the plugin functionality of
@@ -42,24 +44,24 @@ module Cinch
 
       # @return [String]
       def plugin_name=(new_name)
-        if new_name.nil? && self.name
-          @plugin_name = self.name.split("::").last.downcase
+        @plugin_name = if new_name.nil? && name
+          name.split("::").last.downcase
         else
-          @plugin_name = new_name
+          new_name
         end
       end
 
       # @return [Array<Matcher>] All matchers
-      attr_reader   :matchers
+      attr_reader :matchers
 
       # @return [Array<Listener>] All listeners
-      attr_reader   :listeners
+      attr_reader :listeners
 
       # @return [Array<Timer>] All timers
-      attr_reader   :timers
+      attr_reader :timers
 
       # @return [Array<String>] All CTCPs
-      attr_reader   :ctcps
+      attr_reader :ctcps
 
       # @return [String, nil] The help message
       attr_accessor :help
@@ -81,14 +83,14 @@ module Cinch
       # @attr [Symbol] method
       # @attr [Symbol] group
       Matcher = Struct.new(:pattern,
-                           :use_prefix,
-                           :use_suffix,
-                           :method,
-                           :group,
-                           :prefix,
-                           :suffix,
-                           :react_on,
-                           :strip_colors)
+        :use_prefix,
+        :use_suffix,
+        :method,
+        :group,
+        :prefix,
+        :suffix,
+        :react_on,
+        :strip_colors)
 
       # Represents a Listener as created by {#listen_to}.
       #
@@ -119,17 +121,17 @@ module Cinch
       # @api private
       def self.extended(by)
         by.instance_exec do
-          @matchers         = []
-          @ctcps            = []
-          @listeners        = []
-          @timers           = []
-          @help             = nil
-          @hooks            = Hash.new{|h, k| h[k] = []}
-          @prefix           = nil
-          @suffix           = nil
-          @react_on         = :message
+          @matchers = []
+          @ctcps = []
+          @listeners = []
+          @timers = []
+          @help = nil
+          @hooks = Hash.new { |h, k| h[k] = [] }
+          @prefix = nil
+          @suffix = nil
+          @react_on = :message
           @required_options = []
-          self.plugin_name  = nil
+          self.plugin_name = nil
         end
       end
 
@@ -161,11 +163,11 @@ module Cinch
         when 1
           # {:key => value, ...}
           args.first.each do |key, value|
-            self.send("#{key}=", value)
+            send("#{key}=", value)
           end
         when 2
           # key, value
-          self.send("#{args.first}=", args.last)
+          send("#{args.first}=", args.last)
         else
           raise ArgumentError # TODO proper error message
         end
@@ -194,26 +196,26 @@ module Cinch
       # @todo Document match/listener grouping
       def match(pattern, options = {})
         options = {
-          :use_prefix => true,
-          :use_suffix => true,
-          :method => :execute,
-          :group => nil,
-          :prefix => nil,
-          :suffix => nil,
-          :react_on => nil,
-          :strip_colors => false,
+          use_prefix: true,
+          use_suffix: true,
+          method: :execute,
+          group: nil,
+          prefix: nil,
+          suffix: nil,
+          react_on: nil,
+          strip_colors: false
         }.merge(options)
         if options[:react_on]
           options[:react_on] = options[:react_on].to_s.to_sym
         end
         matcher = Matcher.new(pattern, *options.values_at(:use_prefix,
-                                                          :use_suffix,
-                                                          :method,
-                                                          :group,
-                                                          :prefix,
-                                                          :suffix,
-                                                          :react_on,
-                                                          :strip_colors))
+          :use_suffix,
+          :method,
+          :group,
+          :prefix,
+          :suffix,
+          :react_on,
+          :strip_colors))
         @matchers << matcher
 
         matcher
@@ -229,12 +231,12 @@ module Cinch
       #     execute
       #   @return [Array<Listener>]
       def listen_to(*types)
-        options = {:method => :listen}
+        options = {method: :listen}
         if types.last.is_a?(Hash)
           options.merge!(types.pop)
         end
 
-        listeners = types.map {|type| Listener.new(type.to_s.to_sym, options[:method])}
+        listeners = types.map { |type| Listener.new(type.to_s.to_sym, options[:method]) }
         @listeners.concat listeners
 
         listeners
@@ -266,7 +268,7 @@ module Cinch
       # @return [Timer]
       # @since 1.1.0
       def timer(interval, options = {})
-        options = {:method => :timer, :threaded => true}.merge(options)
+        options = {method: :timer, threaded: true}.merge(options)
         timer = Timer.new(interval, options, false)
         @timers << timer
 
@@ -287,7 +289,7 @@ module Cinch
       # @return [Hook]
       # @since 1.1.0
       def hook(type, options = {})
-        options = {:for => [:match, :listen_to, :ctcp], :method => :hook, :group => nil}.merge(options)
+        options = {for: [:match, :listen_to, :ctcp], method: :hook, group: nil}.merge(options)
         hook = Hook.new(type, options[:for], options[:method], options[:group])
         __hooks(type) << hook
 
@@ -297,10 +299,10 @@ module Cinch
       # @return [Hash]
       # @api private
       def __hooks(type = nil, events = nil, group = nil)
-        if type.nil?
-          hooks = @hooks
+        hooks = if type.nil?
+          @hooks
         else
-          hooks = @hooks[type]
+          @hooks[type]
         end
 
         if events.nil?
@@ -313,7 +315,7 @@ module Cinch
           hooks = hooks.select { |hook| (events & hook.for).size > 0 }
         end
 
-        return hooks.select { |hook| hook.group.nil? || hook.group == group }
+        hooks.select { |hook| hook.group.nil? || hook.group == group }
       end
 
       # @return [Boolean] True if processing should continue
@@ -379,10 +381,10 @@ module Cinch
     private :__register_ctcps
 
     def __register_timers
-      @timers = self.class.timers.map {|timer_struct|
+      @timers = self.class.timers.map { |timer_struct|
         @bot.loggers.debug "[plugin] #{self.class.plugin_name}: Registering timer with interval `#{timer_struct.interval}` for method `#{timer_struct.options[:method]}`"
 
-        block = self.method(timer_struct.options[:method])
+        block = method(timer_struct.options[:method])
         options = timer_struct.options.merge(interval: timer_struct.interval)
         Cinch::Timer.new(@bot, options, &block)
       }
@@ -394,19 +396,19 @@ module Cinch
       suffix = self.class.suffix || @bot.config.plugins.suffix
 
       self.class.matchers.each do |matcher|
-        _prefix = matcher.use_prefix ? matcher.prefix || prefix : nil
-        _suffix = matcher.use_suffix ? matcher.suffix || suffix : nil
+        a_prefix = matcher.use_prefix ? matcher.prefix || prefix : nil
+        a_suffix = matcher.use_suffix ? matcher.suffix || suffix : nil
 
-        pattern_to_register = Pattern.new(_prefix, matcher.pattern, _suffix)
+        pattern_to_register = Pattern.new(a_prefix, matcher.pattern, a_suffix)
         react_on = matcher.react_on || self.class.react_on || :message
 
         @bot.loggers.debug "[plugin] #{self.class.plugin_name}: Registering executor with pattern `#{pattern_to_register.inspect}`, reacting on `#{react_on}`"
 
         new_handler = Handler.new(@bot,
-                                  react_on,
-                                  pattern_to_register,
-                                  group: matcher.group,
-                                  strip_colors: matcher.strip_colors) do |message, *args|
+          react_on,
+          pattern_to_register,
+          group: matcher.group,
+          strip_colors: matcher.strip_colors) do |message, *args|
           method = method(matcher.method)
           arity = method.arity - 1
           if arity > 0
@@ -472,7 +474,7 @@ module Cinch
     def initialize(bot)
       @bot = bot
       @handlers = []
-      @timers   = []
+      @timers = []
       __register
     end
 

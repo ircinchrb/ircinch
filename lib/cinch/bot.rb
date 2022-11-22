@@ -1,61 +1,61 @@
-# -*- coding: utf-8 -*-
-require 'socket'
-require "thread"
+# frozen_string_literal: true
+
 require "ostruct"
-require "cinch/rubyext/module"
-require "cinch/rubyext/string"
-require "cinch/rubyext/float"
+require "socket"
 
-require "cinch/exceptions"
+require_relative "rubyext/module"
+require_relative "rubyext/string"
+require_relative "rubyext/float"
 
-require "cinch/handler"
-require "cinch/helpers"
+require_relative "exceptions"
 
-require "cinch/logger_list"
-require "cinch/logger"
+require_relative "handler"
+require_relative "helpers"
 
-require "cinch/logger/formatted_logger"
-require "cinch/syncable"
-require "cinch/message"
-require "cinch/message_queue"
-require "cinch/irc"
-require "cinch/target"
-require "cinch/channel"
-require "cinch/user"
-require "cinch/constants"
-require "cinch/callback"
-require "cinch/ban"
-require "cinch/mask"
-require "cinch/isupport"
-require "cinch/plugin"
-require "cinch/pattern"
-require "cinch/mode_parser"
-require "cinch/dcc"
-require "cinch/sasl"
+require_relative "logger_list"
+require_relative "logger"
 
-require "cinch/handler_list"
-require "cinch/cached_list"
-require "cinch/channel_list"
-require "cinch/user_list"
-require "cinch/plugin_list"
+require_relative "logger/formatted_logger"
+require_relative "syncable"
+require_relative "message"
+require_relative "message_queue"
+require_relative "irc"
+require_relative "target"
+require_relative "channel"
+require_relative "user"
+require_relative "constants"
+require_relative "callback"
+require_relative "ban"
+require_relative "mask"
+require_relative "i_support"
+require_relative "plugin"
+require_relative "pattern"
+require_relative "mode_parser"
+require_relative "dcc"
+require_relative "sasl"
 
-require "cinch/timer"
-require "cinch/formatting"
+require_relative "handler_list"
+require_relative "cached_list"
+require_relative "channel_list"
+require_relative "user_list"
+require_relative "plugin_list"
 
-require "cinch/configuration"
-require "cinch/configuration/bot"
-require "cinch/configuration/plugins"
-require "cinch/configuration/ssl"
-require "cinch/configuration/timeouts"
-require "cinch/configuration/dcc"
-require "cinch/configuration/sasl"
+require_relative "timer"
+require_relative "formatting"
+
+require_relative "configuration"
+require_relative "configuration/bot"
+require_relative "configuration/plugins"
+require_relative "configuration/ssl"
+require_relative "configuration/timeouts"
+require_relative "configuration/dcc"
+require_relative "configuration/sasl"
 
 module Cinch
   # @attr nick
   # @version 2.0.0
   class Bot < User
     include Helpers
-
 
     # @return [Configuration::Bot]
     # @version 2.0.0
@@ -188,22 +188,22 @@ module Cinch
       event = event.to_s.to_sym
 
       pattern = case regexp
-                when Pattern
-                  regexp
-                when Regexp
-                  Pattern.new(nil, regexp, nil)
-                else
-                  if event == :ctcp
-                    Pattern.generate(:ctcp, regexp)
-                  else
-                    Pattern.new(/^/, /#{Regexp.escape(regexp.to_s)}/, /$/)
-                  end
-                end
+      when Pattern
+        regexp
+      when Regexp
+        Pattern.new(nil, regexp, nil)
+      else
+        if event == :ctcp
+          Pattern.generate(:ctcp, regexp)
+        else
+          Pattern.new(/^/, /#{Regexp.escape(regexp.to_s)}/, /$/)
+        end
+      end
 
       handler = Handler.new(self, event, pattern, {args: args, execute_in_callback: true}, &block)
       @handlers.register(handler)
 
-      return handler
+      handler
     end
 
     # @endgroup
@@ -224,7 +224,7 @@ module Cinch
     # @return [void]
     def quit(message = nil)
       @quitting = true
-      command   = message ? "QUIT :#{message}" : "QUIT"
+      command = message ? "QUIT :#{message}" : "QUIT"
 
       @irc.send command
     end
@@ -238,7 +238,7 @@ module Cinch
       @reconnects = 0
       @plugins.register_plugins(@config.plugins.plugins) if plugins
 
-      begin
+      loop do
         @user_list.each do |user|
           user.in_whois = false
           user.unsync_all
@@ -250,10 +250,10 @@ module Cinch
 
         @channels = [] # reset list of channels the bot is in
 
-        @join_handler.unregister if @join_handler
-        @join_timer.stop if @join_timer
+        @join_handler&.unregister
+        @join_timer&.stop
 
-        join_lambda = lambda { @config.channels.each { |channel| Channel(channel).join }}
+        join_lambda = lambda { @config.channels.each { |channel| Channel(channel).join } }
 
         if @config.delay_joins.is_a?(Symbol)
           @join_handler = join_handler = on(@config.delay_joins) {
@@ -290,7 +290,8 @@ module Cinch
             sleep 1
           end
         end
-      end while @config.reconnect and not @quitting
+        break unless @config.reconnect && !@quitting
+      end
     end
 
     # @endgroup
@@ -332,27 +333,27 @@ module Cinch
 
     # @yield
     def initialize(&b)
-      @config           = Configuration::Bot.new
+      @config = Configuration::Bot.new
 
       @loggers = LoggerList.new
       @loggers << Logger::FormattedLogger.new($stderr, level: @config.default_logger_level)
-      @handlers         = HandlerList.new
+      @handlers = HandlerList.new
       @semaphores_mutex = Mutex.new
-      @semaphores       = Hash.new { |h, k| h[k] = Mutex.new }
-      @callback         = Callback.new(self)
-      @channels         = []
-      @quitting         = false
-      @modes            = []
+      @semaphores = Hash.new { |h, k| h[k] = Mutex.new }
+      @callback = Callback.new(self)
+      @channels = []
+      @quitting = false
+      @modes = []
 
-      @user_list    = UserList.new(self)
+      @user_list = UserList.new(self)
       @channel_list = ChannelList.new(self)
-      @plugins      = PluginList.new(self)
+      @plugins = PluginList.new(self)
 
       @join_handler = nil
-      @join_timer   = nil
+      @join_timer = nil
 
       super(nil, self)
-      instance_eval(&b) if block_given?
+      instance_eval(&b) if b
     end
 
     # @since 2.0.0
@@ -434,7 +435,7 @@ module Cinch
     # @since 2.1.0
     # @return [void]
     def oper(password, user = nil)
-      user ||= self.nick
+      user ||= nick
       @irc.send "OPER #{user} #{password}"
     end
 
@@ -452,16 +453,12 @@ module Cinch
         # if `base` is not in our list of nicks to try, assume that it's
         # custom and just append an underscore
         if !nicks.include?(base)
-          new_nick =  base + "_"
+          new_nick = base + "_"
         else
           # if we have a base, try the next nick or append an
           # underscore if no more nicks are left
           new_index = nicks.index(base) + 1
-          if nicks[new_index]
-            new_nick = nicks[new_index]
-          else
-            new_nick = base + "_"
-          end
+          new_nick = nicks[new_index] || base + "_"
         end
       else
         # if we have no base, try the first possible nick

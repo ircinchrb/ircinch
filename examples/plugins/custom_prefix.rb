@@ -1,4 +1,4 @@
-require 'cinch'
+require "ircinch"
 
 class SomeCommand
   include Cinch::Plugin
@@ -13,11 +13,10 @@ end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server   = "irc.freenode.org"
-    c.channels = ["#cinch-bots"]
+    c.server = "irc.libera.chat"
+    c.channels = ["#ircinch-bots"]
     c.plugins.plugins = [SomeCommand]
   end
 end
 
 bot.start
-

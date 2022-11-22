@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   # This class represents masks, which are primarily used for bans.
   class Mask
@@ -14,7 +16,7 @@ module Cinch
     # @param [String] mask
     def initialize(mask)
       @mask = mask
-      @nick, @user, @host = mask.match(/(.+)!(.+)@(.+)/)[1..-1]
+      @nick, @user, @host = mask.match(/(.+)!(.+)@(.+)/)[1..]
       @regexp = Regexp.new("^" + Regexp.escape(mask).gsub("\\*", ".*").gsub("\\?", ".?") + "$")
     end
 
@@ -39,7 +41,7 @@ module Cinch
     # @return [Boolean]
     # @version 1.1.2
     def match(target)
-      return self.class.from(target).mask =~ @regexp
+      self.class.from(target).mask =~ @regexp
 
       # TODO support CIDR (freenode)
     end
@@ -58,12 +60,10 @@ module Cinch
       return target if target.is_a?(self)
 
       if target.respond_to?(:mask)
-        mask = target.mask
+        target.mask
       else
-        mask = Mask.new(target.to_s)
+        Mask.new(target.to_s)
       end
-
-      return mask
     end
   end
 end

@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# frozen_string_literal: true
+
 module Cinch
   # @api private
   # @since 1.1.0
@@ -9,25 +10,25 @@ module Cinch
     def self.obj_to_r(obj, anchor = nil)
       case obj
       when Regexp, NilClass
-        return obj
+        obj
       else
         escaped = Regexp.escape(obj.to_s)
         case anchor
         when :start
-          return Regexp.new("^" + escaped)
+          Regexp.new("^" + escaped)
         when :end
-          return Regexp.new(escaped + "$")
+          Regexp.new(escaped + "$")
         when nil
-          return Regexp.new(Regexp.escape(obj.to_s))
+          Regexp.new(Regexp.escape(obj.to_s))
         end
       end
     end
 
     def self.resolve_proc(obj, msg = nil)
       if obj.is_a?(Proc)
-        return resolve_proc(obj.call(msg), msg)
+        resolve_proc(obj.call(msg), msg)
       else
-        return obj
+        obj
       end
     end
 
@@ -52,12 +53,12 @@ module Cinch
 
       case pattern
       when Regexp, NilClass
-        prefix  = Pattern.obj_to_r(Pattern.resolve_proc(@prefix, msg), :start)
-        suffix  = Pattern.obj_to_r(Pattern.resolve_proc(@suffix, msg), :end)
+        prefix = Pattern.obj_to_r(Pattern.resolve_proc(@prefix, msg), :start)
+        suffix = Pattern.obj_to_r(Pattern.resolve_proc(@suffix, msg), :end)
         /#{prefix}#{pattern}#{suffix}/
       else
-        prefix  = Pattern.obj_to_r(Pattern.resolve_proc(@prefix, msg))
-        suffix  = Pattern.obj_to_r(Pattern.resolve_proc(@suffix, msg))
+        prefix = Pattern.obj_to_r(Pattern.resolve_proc(@prefix, msg))
+        suffix = Pattern.obj_to_r(Pattern.resolve_proc(@suffix, msg))
         /^#{prefix}#{Pattern.obj_to_r(pattern)}#{suffix}$/
       end
     end

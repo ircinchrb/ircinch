@@ -325,7 +325,7 @@ Type
 : Array<Cinch::SASL::Mechanism>
 
 Default value
-: `[Cinch::SASL::DH_Blowfish, Cinch::SASL::Plain]`
+: `[Cinch::SASL::DhBlowfish, Cinch::SASL::Plain]`
 
 Description
 : The SASL mechanisms to use. All mechanisms in the array will be

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   module DCC
     # This module describes the required interface for objects that should

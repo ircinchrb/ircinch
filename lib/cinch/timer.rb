@@ -1,4 +1,6 @@
-require "cinch/helpers"
+# frozen_string_literal: true
+
+require_relative "helpers"
 
 module Cinch
   # Timers are used for executing code in the future, either
@@ -62,15 +64,15 @@ module Cinch
     # @option options [Boolean] :stop_automaticall (true) If true, the
     #   timer will automatically stop when the bot disconnects.
     def initialize(bot, options, &block)
-      options = {:threaded => true, :shots => Float::INFINITY, :start_automatically => true, :stop_automatically => true}.merge(options)
+      options = {threaded: true, shots: Float::INFINITY, start_automatically: true, stop_automatically: true}.merge(options)
 
-      @bot        = bot
-      @interval   = options[:interval].to_f
-      @threaded   = options[:threaded]
+      @bot = bot
+      @interval = options[:interval].to_f
+      @threaded = options[:threaded]
       @orig_shots = options[:shots]
       # Setting @shots here so the attr_reader won't return nil
-      @shots      = @orig_shots
-      @block      = block
+      @shots = @orig_shots
+      @block = block
 
       @started = false
       @thread_group = ThreadGroup.new
@@ -104,7 +106,7 @@ module Cinch
       @shots = @orig_shots
 
       @thread_group.add Thread.new {
-        while @shots > 0 do
+        while @shots > 0
           sleep @interval
           if threaded?
             Thread.new do

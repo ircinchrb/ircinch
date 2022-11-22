@@ -1,18 +1,20 @@
-require 'cinch'
-
-# Who should be able to access these plugins
-$admin = "injekt"
+require "ircinch"
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server   = "irc.freenode.org"
-    c.nick     = "CinchBot"
+    c.server = "irc.libera.chat"
+    c.nick = "IrCinchBot"
     c.channels = ["#cinch-bots"]
+  end
+
+  # Who should be able to access these plugins
+  def admin
+    "injekt"
   end
 
   helpers do
     def is_admin?(user)
-      true if user.nick == $admin
+      true if user.nick == admin
     end
   end
 
@@ -22,7 +24,7 @@ bot = Cinch::Bot.new do
 
   on :message, /^!part(?: (.+))?/ do |m, channel|
     # Part current channel if none is given
-    channel = channel || m.channel
+    channel ||= m.channel
 
     if channel
       bot.part(channel) if is_admin?(m.user)
@@ -31,4 +33,3 @@ bot = Cinch::Bot.new do
 end
 
 bot.start
-

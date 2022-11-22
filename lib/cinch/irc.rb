@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 require "timeout"
 require "net/protocol"
-require "cinch/network"
+
+require_relative "network"
 
 module Cinch
   # This class manages the connection to the IRC server. That includes
@@ -19,7 +22,7 @@ module Cinch
     attr_reader :network
 
     def initialize(bot)
-      @bot      = bot
+      @bot = bot
       @isupport = ISupport.new
     end
 
@@ -34,10 +37,10 @@ module Cinch
     # @return [void]
     # @since 2.0.0
     def setup
-      @registration  = []
-      @network       = Network.new(:unknown, :unknown)
+      @registration = []
+      @network = Network.new(:unknown, :unknown)
       @whois_updates = {}
-      @in_lists      = Set.new
+      @in_lists = Set.new
     end
 
     # @api private
@@ -46,7 +49,7 @@ module Cinch
       tcp_socket = nil
 
       begin
-        Timeout::timeout(@bot.config.timeouts.connect) do
+        Timeout.timeout(@bot.config.timeouts.connect) do
           tcp_socket = TCPSocket.new(@bot.config.server, @bot.config.port, @bot.config.local_host)
         end
       rescue Timeout::Error
@@ -66,11 +69,11 @@ module Cinch
         @socket = tcp_socket
       end
 
-      @socket              = Net::BufferedIO.new(@socket)
+      @socket = Net::BufferedIO.new(@socket)
       @socket.read_timeout = @bot.config.timeouts.read
-      @queue               = MessageQueue.new(@socket, @bot)
+      @queue = MessageQueue.new(@socket, @bot)
 
-      return true
+      true
     end
 
     # @api private
@@ -79,24 +82,24 @@ module Cinch
     def setup_ssl(socket)
       # require openssl in this method so the bot doesn't break for
       # people who don't have SSL but don't want to use SSL anyway.
-      require 'openssl'
+      require "openssl"
 
       ssl_context = OpenSSL::SSL::SSLContext.new
 
       if @bot.config.ssl.is_a?(Configuration::SSL)
         if @bot.config.ssl.client_cert
           ssl_context.cert = OpenSSL::X509::Certificate.new(File.read(@bot.config.ssl.client_cert))
-          ssl_context.key  = OpenSSL::PKey::RSA.new(File.read(@bot.config.ssl.client_cert))
+          ssl_context.key = OpenSSL::PKey::RSA.new(File.read(@bot.config.ssl.client_cert))
         end
 
-        ssl_context.ca_path     = @bot.config.ssl.ca_path
+        ssl_context.ca_path = @bot.config.ssl.ca_path
         ssl_context.verify_mode = @bot.config.ssl.verify ? OpenSSL::SSL::VERIFY_PEER : OpenSSL::SSL::VERIFY_NONE
       else
         ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
       @bot.loggers.info "Using SSL with #{@bot.config.server}:#{@bot.config.port}"
 
-      @socket      = OpenSSL::SSL::SSLSocket.new(socket, ssl_context)
+      @socket = OpenSSL::SSL::SSLSocket.new(socket, ssl_context)
       @socket.sync = true
       @socket.connect
     end
@@ -145,7 +148,7 @@ module Cinch
     def start_reading_thread
       Thread.new do
         begin
-          while line = @socket.readline
+          while (line = @socket.readline)
             rescue_exception do
               line = Cinch::Utilities::Encoding.encode_incoming(line, @bot.config.encoding)
               parse line
@@ -184,7 +187,7 @@ module Cinch
     # @since 2.0.0
     def start_ping_thread
       Thread.new do
-        while true
+        loop do
           sleep @bot.config.ping_interval
           # PING requires a single argument. In our case the value
           # doesn't matter though.
@@ -195,7 +198,7 @@ module Cinch
 
     # @since 2.0.0
     def send_sasl
-      if @bot.config.sasl.username && @sasl_current_method = @sasl_remaining_methods.pop
+      if @bot.config.sasl.username && (@sasl_current_method = @sasl_remaining_methods.pop)
         @bot.loggers.info "[SASL] Trying to authenticate with #{@sasl_current_method.mechanism_name}"
         send "AUTHENTICATE #{@sasl_current_method.mechanism_name}"
       else
@@ -216,7 +219,7 @@ module Cinch
 
         reading_thread = start_reading_thread
         sending_thread = start_sending_thread
-        ping_thread    = start_ping_thread
+        ping_thread = start_ping_thread
 
         reading_thread.join
         sending_thread.kill
@@ -230,8 +233,8 @@ module Cinch
       return if input.chomp.empty?
       @bot.loggers.incoming(input)
 
-      msg          = Message.new(input, @bot)
-      events       = [[:catchall]]
+      msg = Message.new(input, @bot)
+      events = [[:catchall]]
 
       if ["001", "002", "003", "004", "422"].include?(msg.command)
         @registration << msg.command
@@ -244,10 +247,10 @@ module Cinch
 
       if ["PRIVMSG", "NOTICE"].include?(msg.command)
         events << [:ctcp] if msg.ctcp?
-        if msg.channel?
-          events << [:channel]
+        events << if msg.channel?
+          [:channel]
         else
-          events << [:private]
+          [:private]
         end
 
         if msg.command == "PRIVMSG"
@@ -287,6 +290,7 @@ module Cinch
     end
 
     private
+
     def set_leaving_user(message, user, events)
       events << [:leaving, user]
     end
@@ -295,24 +299,24 @@ module Cinch
     def detect_network(msg, event)
       old_network = @network
       new_network = nil
-      new_ircd    = nil
+      new_ircd = nil
       case event
       when "002"
         if msg.params.last =~ /^Your host is .+?, running version (.+)$/
           case $1
           when /\+snircd\(/
             new_ircd = :snircd
-          when /^u[\d\.]+$/
+          when /^u[\d.]+$/
             new_ircd = :ircu
           when /^(.+?)-?\d+/
             new_ircd = $1.downcase.to_sym
           end
         elsif msg.params.last == "Your host is jtvchat"
           new_network = :jtv
-          new_ircd    = :jtv
+          new_ircd = :jtv
         end
       when "004"
-        if msg.params == %w{irc.tinyspeck.com IRC-SLACK gateway}
+        if msg.params == %w[irc.tinyspeck.com IRC-SLACK gateway]
           new_network = :slack
           new_ircd = :slack
         end
@@ -320,15 +324,16 @@ module Cinch
         case @isupport["NETWORK"]
         when "NGameTV"
           new_network = :ngametv
-          new_ircd    = :ngametv
+          new_ircd = :ngametv
         when nil
+          # Do nothing
         else
           new_network = @isupport["NETWORK"].downcase.to_sym
         end
       end
 
       new_network ||= old_network.name
-      new_ircd    ||= old_network.ircd
+      new_ircd ||= old_network.ircd
 
       if old_network.unknown_ircd? && new_ircd != :unknown
         @bot.loggers.info "Detected IRCd: #{new_ircd}"
@@ -355,7 +360,7 @@ module Cinch
         msg.channel.bans_unsynced << ban
         events << [:ban, ban]
       else
-        msg.channel.bans_unsynced.delete_if {|b| b.mask == ban.mask}
+        msg.channel.bans_unsynced.delete_if { |b| b.mask == ban.mask }
         events << [:unban, ban]
       end
     end
@@ -458,19 +463,18 @@ module Cinch
       add_and_remove = @bot.irc.isupport["CHANMODES"]["A"] + @bot.irc.isupport["CHANMODES"]["B"] + @bot.irc.isupport["PREFIX"].keys
 
       param_modes = {
-        :add    => @bot.irc.isupport["CHANMODES"]["C"] + add_and_remove,
-        :remove => add_and_remove
+        add: @bot.irc.isupport["CHANMODES"]["C"] + add_and_remove,
+        remove: add_and_remove
       }
 
-
-      modes, err = ModeParser.parse_modes(msg.params[1], msg.params[2..-1], param_modes)
-      if err != nil
-        if  @network.ircd != :slack || !err.is_a?(ModeParser::TooManyParametersError)
+      modes, err = ModeParser.parse_modes(msg.params[1], msg.params[2..], param_modes)
+      if !err.nil?
+        if @network.ircd != :slack || !err.is_a?(ModeParser::TooManyParametersError)
           raise Exceptions::InvalidModeString, err
         end
       end
       modes.each do |direction, mode, param|
-        if @bot.irc.isupport["PREFIX"].keys.include?(mode)
+        if @bot.irc.isupport["PREFIX"].key?(mode)
           target = User(param)
 
           # (un)set a user-mode
@@ -486,7 +490,7 @@ module Cinch
             "h" => "halfop"
           }
           if user_events.has_key?(mode)
-            event = (direction == :add ? "" : "de") + user_events[mode]
+            event = ((direction == :add) ? "" : "de") + user_events[mode]
             events << [event.to_sym, target]
           end
         elsif @bot.irc.isupport["CHANMODES"]["A"].include?(mode)
@@ -498,13 +502,11 @@ module Cinch
           else
             raise Exceptions::UnsupportedMode, mode
           end
-        else
+        elsif direction == :add
           # channel options
-          if direction == :add
-            msg.channel.modes_unsynced[mode] = param.nil? ? true : param
-          else
-            msg.channel.modes_unsynced.delete(mode)
-          end
+          msg.channel.modes_unsynced[mode] = param.nil? ? true : param
+        else
+          msg.channel.modes_unsynced.delete(mode)
         end
       end
 
@@ -512,8 +514,8 @@ module Cinch
     end
 
     def parse_bot_modes(msg)
-      modes, err = ModeParser.parse_modes(msg.params[1], msg.params[2..-1])
-      if err != nil
+      modes, err = ModeParser.parse_modes(msg.params[1], msg.params[2..])
+      if !err.nil?
         raise Exceptions::InvalidModeString, err
       end
       modes.each do |direction, mode, _|
@@ -526,11 +528,11 @@ module Cinch
     end
 
     def on_nick(msg, events)
-      if msg.user == @bot
+      target = if msg.user == @bot
         # @bot.set_nick msg.params.last
-        target = @bot
+        @bot
       else
-        target = msg.user
+        msg.user
       end
 
       target.update_nick(msg.params.last)
@@ -567,10 +569,10 @@ module Cinch
 
       if msg.message.downcase == "excess flood" && msg.user == @bot
         @bot.warn ["Looks like your bot has been kicked because of excess flood.",
-                   "If you haven't modified the throttling options manually, please file a bug report at https://github.com/cinchrb/cinch/issues and include the following information:",
-                   "- Server: #{@bot.config.server}",
-                   "- Messages per second: #{@bot.config.messages_per_second}",
-                   "- Server queue size: #{@bot.config.server_queue_size}"]
+          "If you haven't modified the throttling options manually, please file a bug report at https://github.com/cinchrb/cinch/issues and include the following information:",
+          "- Server: #{@bot.config.server}",
+          "- Messages per second: #{@bot.config.messages_per_second}",
+          "- Server queue size: #{@bot.config.server_queue_size}"]
       end
     end
 
@@ -587,14 +589,14 @@ module Cinch
 
     # @since 2.0.0
     def process_dcc_send(filename, ip, port, size, m, events)
-      if ip =~ /^\d+$/
+      if ip.match?(/^\d+$/)
         # If ip is a single integer, assume it's a specification
         # compliant IPv4 address in network byte order. If it's any
         # other string, assume that it's a valid IPv4 or IPv6 address.
         # If it's not valid, let someone higher up the chain notice
         # that.
-        ip   = ip.to_i
-        ip   = [24, 16, 8, 0].collect {|b| (ip >> b) & 255}.join('.')
+        ip = ip.to_i
+        ip = [24, 16, 8, 0].collect { |b| (ip >> b) & 255 }.join(".")
       end
 
       port = port.to_i
@@ -625,7 +627,7 @@ module Cinch
 
     def on_005(msg, events)
       # ISUPPORT
-      @isupport.parse(*msg.params[1..-2].map {|v| v.split(" ")}.flatten)
+      @isupport.parse(*msg.params[1..-2].map { |v| v.split(" ") }.flatten)
       detect_network(msg, "005")
     end
 
@@ -636,7 +638,7 @@ module Cinch
       away = msg.params.last
 
       if @whois_updates[user]
-        update_whois(user, {:away => away})
+        update_whois(user, {away: away})
       end
     end
 
@@ -644,32 +646,32 @@ module Cinch
     def on_307(msg, events)
       # RPL_WHOISREGNICK
       user = User(msg.params[1])
-      update_whois(user, {:registered => true})
+      update_whois(user, {registered: true})
     end
 
     def on_311(msg, events)
       # RPL_WHOISUSER
       user = User(msg.params[1])
       update_whois(user, {
-                     :user => msg.params[2],
-                     :host => msg.params[3],
-                     :realname => msg.params[5],
-                   })
+        user: msg.params[2],
+        host: msg.params[3],
+        realname: msg.params[5]
+      })
     end
 
     def on_313(msg, events)
       # RPL_WHOISOPERATOR
       user = User(msg.params[1])
-      update_whois(user, {:oper? => true})
+      update_whois(user, {oper?: true})
     end
 
     def on_317(msg, events)
       # RPL_WHOISIDLE
       user = User(msg.params[1])
       update_whois(user, {
-                     :idle => msg.params[2].to_i,
-                     :signed_on_at => Time.at(msg.params[3].to_i),
-                   })
+        idle: msg.params[2].to_i,
+        signed_on_at: Time.at(msg.params[3].to_i)
+      })
     end
 
     def on_318(msg, events)
@@ -681,21 +683,21 @@ module Cinch
 
     def on_319(msg, events)
       # RPL_WHOISCHANNELS
-      user     = User(msg.params[1])
-      channels = msg.params[2].scan(/[#{@isupport["CHANTYPES"].join}][^ ]+/o).map {|c| Channel(c) }
-      update_whois(user, {:channels => channels})
+      user = User(msg.params[1])
+      channels = msg.params[2].scan(/[#{@isupport["CHANTYPES"].join}][^ ]+/o).map { |c| Channel(c) }
+      update_whois(user, {channels: channels})
     end
 
     def on_324(msg, events)
       # RPL_CHANNELMODEIS
-      modes     = {}
-      arguments = msg.params[3..-1]
+      modes = {}
+      arguments = msg.params[3..]
 
-      msg.params[2][1..-1].split("").each do |mode|
-        if (@isupport["CHANMODES"]["B"] + @isupport["CHANMODES"]["C"]).include?(mode)
-          modes[mode] = arguments.shift
+      msg.params[2][1..].chars.each do |mode|
+        modes[mode] = if (@isupport["CHANMODES"]["B"] + @isupport["CHANMODES"]["C"]).include?(mode)
+          arguments.shift
         else
-          modes[mode] = true
+          true
         end
       end
 
@@ -704,9 +706,9 @@ module Cinch
 
     def on_330(msg, events)
       # RPL_WHOISACCOUNT
-      user     = User(msg.params[1])
+      user = User(msg.params[1])
       authname = msg.params[2]
-      update_whois(user, {:authname => authname})
+      update_whois(user, {authname: authname})
     end
 
     def on_331(msg, events)
@@ -724,7 +726,7 @@ module Cinch
       # "<channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real name>"
       _, channel, user, host, _, nick, _, hopsrealname = msg.params
       _, realname = hopsrealname.split(" ", 2)
-      channel     = Channel(channel)
+      Channel(channel)
       user_object = User(nick)
       user_object.sync(:user, user, true)
       user_object.sync(:host, host, true)
@@ -742,12 +744,12 @@ module Cinch
       # :leguin.freenode.net 354 dominikh_ ~oddmunds s21-04214.dsl.no.powertech.net       oddmunds  H 0        :oddmunds
 
       _, channel, user, host, nick, _, account, realname = msg.params
-      channel = Channel(channel)
+      Channel(channel)
       user_object = User(nick)
       user_object.sync(:user, user, true)
       user_object.sync(:host, host, true)
       user_object.sync(:realname, realname, true)
-      user_object.sync(:authname, account == "0" ? nil : account, true)
+      user_object.sync(:authname, (account == "0") ? nil : account, true)
     end
 
     def on_353(msg, events)
@@ -760,13 +762,13 @@ module Cinch
       msg.params[3].split(" ").each do |user|
         m = user.match(/^([#{@isupport["PREFIX"].values.join}]+)/)
         if m
-          prefixes = m[1].split("").map {|s| @isupport["PREFIX"].key(s)}
-          nick   = user[prefixes.size..-1]
+          prefixes = m[1].chars.map { |s| @isupport["PREFIX"].key(s) }
+          nick = user[prefixes.size..]
         else
-          nick   = user
+          nick = user
           prefixes = []
         end
-        user        = User(nick)
+        user = User(nick)
         user.online = true
         msg.channel.add_user(user, prefixes)
         user.channels_unsynced << msg.channel unless user.channels_unsynced.include?(msg.channel)
@@ -794,13 +796,11 @@ module Cinch
         mask = "%s!%s@%s" % [mask, mask, mask + ".irc.justin.tv"]
       end
 
-      if msg.params[3]
-        by = User(msg.params[3].split("!").first)
-      else
-        by = nil
+      by = if msg.params[3]
+        User(msg.params[3].split("!").first)
       end
 
-      at  = Time.at(msg.params[4].to_i)
+      at = Time.at(msg.params[4].to_i)
       ban = Ban.new(mask, by, at)
       msg.channel.bans_unsynced << ban
     end
@@ -833,7 +833,7 @@ module Cinch
       if @in_lists.include?(:owners)
         @in_lists.delete :owners
       else
-        #we never received an owner, yet an end of list -> no owners
+        # We never received an owner, yet an end of list -> no owners
         msg.channel.owners_unsynced.clear
       end
 
@@ -848,16 +848,16 @@ module Cinch
 
     def on_401(msg, events)
       # ERR_NOSUCHNICK
-      if user = @bot.user_list.find(msg.params[1])
-        update_whois(user, {:unknown? => true})
+      if (user = @bot.user_list.find(msg.params[1]))
+        update_whois(user, {unknown?: true})
       end
     end
 
     def on_402(msg, events)
       # ERR_NOSUCHSERVER
 
-      if user = @bot.user_list.find(msg.params[1]) # not _ensured, we only want a user that already exists
-        user.end_of_whois({:unknown? => true})
+      if (user = @bot.user_list.find(msg.params[1])) # not _ensured, we only want a user that already exists
+        user.end_of_whois({unknown?: true})
         @whois_updates.delete user
         # TODO freenode specific, test on other IRCd
       end
@@ -870,7 +870,7 @@ module Cinch
 
     def on_671(msg, events)
       user = User(msg.params[1])
-      update_whois(user, {:secure? => true})
+      update_whois(user, {secure?: true})
     end
 
     # @since 2.0.0
@@ -917,8 +917,8 @@ module Cinch
     # @since 2.0.0
     def on_authenticate(msg, events)
       send "AUTHENTICATE " + @sasl_current_method.generate(@bot.config.sasl.username,
-                                                           @bot.config.sasl.password,
-                                                           msg.params.last)
+        @bot.config.sasl.password,
+        msg.params.last)
     end
   end
 end

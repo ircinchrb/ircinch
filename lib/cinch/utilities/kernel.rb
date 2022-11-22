@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   module Utilities
     # @since 2.0.0
@@ -6,7 +8,7 @@ module Cinch
       # @return [Object]
       def self.string_to_const(s)
         return s unless s.is_a?(::String)
-        s.split("::").inject(Kernel) {|base, name| base.const_get(name) }
+        s.split("::").inject(Kernel) { |base, name| base.const_get(name) }
       end
     end
   end

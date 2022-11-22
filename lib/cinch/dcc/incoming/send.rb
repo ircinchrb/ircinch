@@ -1,5 +1,7 @@
-require "socket"
+# frozen_string_literal: true
+
 require "ipaddr"
+require "socket"
 
 module Cinch
   module DCC
@@ -48,13 +50,13 @@ module Cinch
       class Send
         # @private
         PRIVATE_NETS = [IPAddr.new("fc00::/7"),
-                        IPAddr.new("10.0.0.0/8"),
-                        IPAddr.new("172.16.0.0/12"),
-                        IPAddr.new("192.168.0.0/16")]
+          IPAddr.new("10.0.0.0/8"),
+          IPAddr.new("172.16.0.0/12"),
+          IPAddr.new("192.168.0.0/16")]
 
         # @private
         LOCAL_NETS = [IPAddr.new("127.0.0.0/8"),
-                      IPAddr.new("::1/128")]
+          IPAddr.new("::1/128")]
 
         # @return [User]
         attr_reader :user
@@ -105,7 +107,7 @@ module Cinch
           socket = TCPSocket.new(@ip, @port)
           total = 0
 
-          while buf = socket.readpartial(8192)
+          while (buf = socket.readpartial(8192))
             total += buf.bytesize
 
             begin
@@ -123,23 +125,23 @@ module Cinch
           end
 
           socket.close
-          return true
+          true
         rescue EOFError
-          return false
+          false
         end
 
         # @return [Boolean] True if the DCC originates from a private ip
         # @see #from_localhost?
         def from_private_ip?
-          ip   = IPAddr.new(@ip)
-          PRIVATE_NETS.any? {|n| n.include?(ip)}
+          ip = IPAddr.new(@ip)
+          PRIVATE_NETS.any? { |n| n.include?(ip) }
         end
 
         # @return [Boolean] True if the DCC originates from localhost
         # @see #from_private_ip?
         def from_localhost?
-          ip   = IPAddr.new(@ip)
-          LOCAL_NETS.any? {|n| n.include?(ip)}
+          ip = IPAddr.new(@ip)
+          LOCAL_NETS.any? { |n| n.include?(ip) }
         end
       end
     end

@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-require 'cinch'
+require "cinch"
 
 class HooksDemo
   include Cinch::Plugin
@@ -24,13 +23,12 @@ end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.nick            = "cinch_hooks"
-    c.server          = "irc.freenode.org"
-    c.channels        = ["#cinch-bots"]
-    c.verbose         = true
+    c.nick = "ircinch_hooks"
+    c.server = "irc.libera.chat"
+    c.channels = ["#ircinch-bots"]
+    c.verbose = true
     c.plugins.plugins = [HooksDemo]
   end
 end
-
 
 bot.start

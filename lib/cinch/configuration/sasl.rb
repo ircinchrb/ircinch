@@ -1,17 +1,19 @@
-require "cinch/configuration"
-require "cinch/sasl"
+# frozen_string_literal: true
+
+require_relative "../configuration"
+require_relative "../sasl"
 
 module Cinch
   class Configuration
     # @since 2.0.0
     class SASL < Configuration
-      KnownOptions = [:username, :password, :mechanisms]
+      KNOWN_OPTIONS = [:username, :password, :mechanisms]
 
       def self.default_config
         {
-          :username => nil,
-          :password => nil,
-          :mechanisms => [Cinch::SASL::DH_Blowfish, Cinch::SASL::Plain]
+          username: nil,
+          password: nil,
+          mechanisms: [Cinch::SASL::DhBlowfish, Cinch::SASL::Plain]
         }
       end
     end

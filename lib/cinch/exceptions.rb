@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   # A collection of exceptions.
   module Exceptions

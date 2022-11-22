@@ -1,4 +1,7 @@
-require "cinch/mask"
+# frozen_string_literal: true
+
+require_relative "mask"
+
 module Cinch
   # This class represents channel bans.
   class Ban
@@ -24,9 +27,9 @@ module Cinch
     # @param [Time] at The time at which the ban was created
     def initialize(mask, by, at)
       @by, @created_at = by, at
-      if mask =~ /^[\$~]/
+      if mask.match?(/^[$~]/)
         @extended = true
-        @mask     = mask
+        @mask = mask
       else
         @extended = false
         @mask = Mask.from(mask)

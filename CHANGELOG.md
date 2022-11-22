@@ -1,9 +1,9 @@
-* 21 November 2022
+* IRCinch 2.4.0, 21 November 2022
   - Fork the archived Cinch project as IRCinch
   - Various updates to rename the project to IRCinch without breaking drop-in
     compatibility with Cinch
-  - Incomplete: Start separation of positional and keyword arguments for 
-    compatibility with Ruby >= 3.0
+  - Start separation of positional and keyword arguments for compatibility
+    with Ruby >= 3.0
 
 * Cinch 2.3.2, 25 April 2016
   - Fix exception and premature timeouts in DCC send

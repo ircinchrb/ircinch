@@ -1,10 +1,10 @@
-require 'cinch'
+require "ircinch"
 
 class JoinPart
   include Cinch::Plugin
 
-  match /join (.+)/, method: :join
-  match /part(?: (.+))?/, method: :part
+  match(/join (.+)/, method: :join)
+  match(/part(?: (.+))?/, method: :part)
 
   def initialize(*args)
     super
@@ -13,8 +13,7 @@ class JoinPart
   end
 
   def check_user(user)
-    user.refresh # be sure to refresh the data, or someone could steal
-                 # the nick
+    user.refresh # be sure to refresh the data, or someone could steal the nick
     @admins.include?(user.authname)
   end
 
@@ -32,9 +31,9 @@ end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server = "irc.freenode.org"
-    c.nick   = "CinchBot"
-    c.channels = ["#cinch-bots"]
+    c.server = "irc.libera.chat"
+    c.nick = "IrCinchBot"
+    c.channels = ["#ircinch-bots"]
     c.plugins.plugins = [JoinPart]
   end
 end

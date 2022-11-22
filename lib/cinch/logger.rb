@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   # This is the base logger class from which all loggers have to
   # inherit.
@@ -5,7 +7,7 @@ module Cinch
   # @version 2.0.0
   class Logger
     # @private
-    LevelOrder = [:debug, :log, :info, :warn, :error, :fatal]
+    LEVEL_ORDER = [:debug, :log, :info, :warn, :error, :fatal]
 
     # @return [Array<:debug, :log, :info, :warn, :error, :fatal>]
     #   The minimum level of events to log
@@ -22,8 +24,8 @@ module Cinch
     # @param [IO] output The I/O object to write log data to
     def initialize(output, level: :debug)
       @output = output
-      @mutex  = Mutex.new
-      @level  = level
+      @mutex = Mutex.new
+      @level = level
     end
 
     # Logs a debugging message.
@@ -115,7 +117,7 @@ module Cinch
           message = format_message(message, event)
 
           next if message.nil?
-          @output.puts message.encode("locale", {:invalid => :replace, :undef => :replace})
+          @output.puts message.encode("locale", invalid: :replace, undef: :replace)
         end
       end
     end
@@ -125,10 +127,11 @@ module Cinch
     #   allow the passed in level to be logged
     # @since 2.0.0
     def will_log?(level)
-      LevelOrder.index(level) >= LevelOrder.index(@level)
+      LEVEL_ORDER.index(level) >= LEVEL_ORDER.index(@level)
     end
 
     private
+
     def format_message(message, level)
       __send__ "format_#{level}", message
     end

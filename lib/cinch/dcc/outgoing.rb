@@ -1,1 +1,3 @@
-require "cinch/dcc/outgoing/send"
+# frozen_string_literal: true
+
+require_relative "outgoing/send"

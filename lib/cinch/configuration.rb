@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 module Cinch
   # @since 2.0.0
   class Configuration < OpenStruct
-    KnownOptions = []
+    KNOWN_OPTIONS = []
 
     # Generate a default configuration.
     #
@@ -22,13 +24,13 @@ module Cinch
 
     def [](key)
       # FIXME also adjust method_missing
-      raise ArgumentError, "Unknown option #{key}" unless self.class::KnownOptions.include?(key)
+      raise ArgumentError, "Unknown option #{key}" unless self.class::KNOWN_OPTIONS.include?(key)
       @table[key]
     end
 
     def []=(key, value)
       # FIXME also adjust method_missing
-      raise ArgumentError, "Unknown option #{key}" unless self.class::KnownOptions.include?(key)
+      raise ArgumentError, "Unknown option #{key}" unless self.class::KNOWN_OPTIONS.include?(key)
       modifiable[new_ostruct_member(key)] = value
     end
 

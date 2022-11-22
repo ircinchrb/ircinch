@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   # This class allows querying the IRC network for its name and used
   # server software as well as certain non-standard behaviour.
@@ -31,8 +33,8 @@ module Cinch
     # @note The user should not create instances of this class but use
     #   {IRC#network} instead.
     def initialize(name, ircd)
-      @name         = name
-      @ircd         = ircd
+      @name = name
+      @ircd = ircd
       @capabilities = []
     end
 

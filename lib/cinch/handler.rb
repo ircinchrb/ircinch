@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Cinch
   # @since 2.0.0
   class Handler
@@ -39,20 +41,20 @@ module Cinch
     # @option options [Array] :args ([]) Additional arguments to pass
     #   to the block
     def initialize(bot, event, pattern, options = {}, &block)
-      options              = {
-        :group => nil,
-        :execute_in_callback => false,
-        :strip_colors => false,
-        :args => []
+      options = {
+        group: nil,
+        execute_in_callback: false,
+        strip_colors: false,
+        args: []
       }.merge(options)
-      @bot                 = bot
-      @event               = event
-      @pattern             = pattern
-      @group               = options[:group]
+      @bot = bot
+      @event = event
+      @pattern = pattern
+      @group = options[:group]
       @execute_in_callback = options[:execute_in_callback]
-      @strip_colors        = options[:strip_colors]
-      @args                = options[:args]
-      @block               = block
+      @strip_colors = options[:strip_colors]
+      @args = options[:args]
+      @block = block
 
       @thread_group = ThreadGroup.new
     end
