@@ -33,10 +33,12 @@ Gem::Specification.new do |spec|
   # spec.add_dependency "example-gem", "~> 1.0"
 
   # Register development dependencies (gems required to program this gem)
-  spec.add_development_dependency "rake", "~> 13.0"
-  spec.add_development_dependency "minitest", "~> 5.16"
-  spec.add_development_dependency "simplecov", "~> 0.21.2"
-  spec.add_development_dependency "standard", "~> 1.18"
+  spec.add_development_dependency "bundler-audit"
+  spec.add_development_dependency "bundler-integrity"
+  spec.add_development_dependency "minitest"
+  spec.add_development_dependency "rake"
+  spec.add_development_dependency "simplecov"
+  spec.add_development_dependency "standard"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
