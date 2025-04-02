@@ -1,3 +1,7 @@
+* IRCinch 2.4.1, 1 April 2025
+  - Gemspec updates for compatibility with Ruby >= 3.4.0
+  - Minor readme and documentation updates
+
 * IRCinch 2.4.0, 21 November 2022
   - Fork the archived Cinch project as IRCinch
   - Various updates to rename the project to IRCinch without breaking drop-in

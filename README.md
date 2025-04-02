@@ -67,8 +67,8 @@ More examples can be found in the `examples` directory.
 
 ### Documentation
 
-Cinch provides a documented API, which is online for your viewing pleasure
-[here](http://rubydoc.info/gems/cinch/frames).
+IRCinch provides a documented API, which is online for your viewing pleasure at
+[https://rubydoc.info/gems/ircinch](https://rubydoc.info/gems/ircinch).
 
 ### Object Oriented
 

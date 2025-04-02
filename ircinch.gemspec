@@ -6,13 +6,13 @@ Gem::Specification.new do |spec|
   spec.name = "ircinch"
   spec.version = Cinch::VERSION
   spec.authors = ["Matt Sias"]
-  spec.email = ["siasmj@uwec.edu"]
+  spec.email = ["mattsias@gmail.com"]
 
   spec.summary = "An IRC Bot Building Ruby Framework"
   spec.description = "A simple, friendly Ruby DSL for creating IRC bots"
   spec.homepage = "https://github.com/ircinchrb/ircinch"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 2.7.0"
+  spec.required_ruby_version = ">= 3.2.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/ircinchrb/ircinch"
@@ -30,9 +30,10 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Register runtime dependencies (gems required to run this gem)
-  # spec.add_dependency "example-gem", "~> 1.0"
+  spec.add_dependency "ostruct"
 
   # Register development dependencies (gems required to program this gem)
+  spec.add_development_dependency "base64"
   spec.add_development_dependency "bundler-audit"
   spec.add_development_dependency "bundler-integrity"
   spec.add_development_dependency "minitest"
