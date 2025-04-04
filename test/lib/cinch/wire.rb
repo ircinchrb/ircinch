@@ -38,8 +38,8 @@ class WireTest < TestCase
   end
 
   test "should be able to inspect sent IRC commands in tests" do
-    @bot.send("hello,")
-    @bot.send("world!")
+    @bot.send(:"hello,")
+    @bot.send(:world!)
     assert_equal "PRIVMSG cinch :hello,\r\nPRIVMSG cinch :world!\r\n", sent
   end
 

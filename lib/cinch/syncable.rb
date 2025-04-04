@@ -33,7 +33,7 @@ module Cinch
       if data
         @data[attribute] = value
       else
-        instance_variable_set("@#{attribute}", value)
+        instance_variable_set(:"@#{attribute}", value)
       end
       @synced_attributes << attribute
     end
@@ -70,7 +70,7 @@ module Cinch
       if data
         @data[attribute]
       else
-        instance_variable_get("@#{attribute}")
+        instance_variable_get(:"@#{attribute}")
       end
     end
 

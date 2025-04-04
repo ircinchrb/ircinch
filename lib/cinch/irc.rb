@@ -504,7 +504,7 @@ module Cinch
           end
         elsif direction == :add
           # channel options
-          msg.channel.modes_unsynced[mode] = param.nil? ? true : param
+          msg.channel.modes_unsynced[mode] = param.nil? || param
         else
           msg.channel.modes_unsynced.delete(mode)
         end

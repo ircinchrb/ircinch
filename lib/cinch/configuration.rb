@@ -14,7 +14,7 @@ module Cinch
 
     def initialize(base = nil)
       base ||= self.class.default_config
-      super(base)
+      super
     end
 
     # @return [Hash]

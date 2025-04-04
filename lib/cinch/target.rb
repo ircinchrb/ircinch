@@ -138,7 +138,7 @@ module Cinch
     # @param [#to_s] message the ctcp message
     # @return [void]
     def ctcp(message)
-      send "\001#{message}\001"
+      send :"\001#{message}\001"
     end
 
     def concretize

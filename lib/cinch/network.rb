@@ -41,13 +41,13 @@ module Cinch
     # @return [String, nil] The mode used for getting the list of
     #   channel owners, if any
     def owner_list_mode
-      return "q" if @ircd == :unreal || @ircd == :inspircd
+      "q" if @ircd == :unreal || @ircd == :inspircd
     end
 
     # @return [String, nil] The mode used for getting the list of
     #   channel quiets, if any
     def quiet_list_mode
-      return "q" if @ircd == :"ircd-seven"
+      "q" if @ircd == :"ircd-seven"
     end
 
     # @return [Boolean] Does WHOIS only support one argument?

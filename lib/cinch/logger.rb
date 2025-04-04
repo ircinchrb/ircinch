@@ -133,7 +133,7 @@ module Cinch
     private
 
     def format_message(message, level)
-      __send__ "format_#{level}", message
+      __send__ :"format_#{level}", message
     end
 
     def format_general(message)

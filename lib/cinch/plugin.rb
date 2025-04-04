@@ -163,11 +163,11 @@ module Cinch
         when 1
           # {:key => value, ...}
           args.first.each do |key, value|
-            send("#{key}=", value)
+            send(:"#{key}=", value)
           end
         when 2
           # key, value
-          send("#{args.first}=", args.last)
+          send(:"#{args.first}=", args.last)
         else
           raise ArgumentError # TODO proper error message
         end
@@ -367,7 +367,7 @@ module Cinch
         @bot.loggers.debug "[plugin] #{self.class.plugin_name}: Registering CTCP `#{ctcp}`"
         new_handler = Handler.new(@bot, :ctcp, Pattern.generate(:ctcp, ctcp)) do |message, *args|
           if self.class.call_hooks(:pre, :ctcp, nil, self, [message])
-            __send__("ctcp_#{ctcp.downcase}", message, *args)
+            __send__(:"ctcp_#{ctcp.downcase}", message, *args)
             self.class.call_hooks(:post, :ctcp, nil, self, [message])
           else
             @bot.loggers.debug "[plugin] #{self.class.plugin_name}: Dropping message due to hook"

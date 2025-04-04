@@ -135,13 +135,13 @@ module Cinch
     def unknown_unsynced
       attr(:unknown?, true, true)
     end
-    alias_method :"unknown?_unsynced", "unknown_unsynced"
+    alias_method :"unknown?_unsynced", :unknown_unsynced
 
     # @private
     def online_unsynced
       attr(:online?, true, true)
     end
-    alias_method :"online?_unsynced", "online_unsynced"
+    alias_method :"online?_unsynced", :online_unsynced
 
     # @private
     def channels_unsynced
@@ -152,14 +152,14 @@ module Cinch
     def secure_unsynced
       attr(:secure?, true, true)
     end
-    alias_method :"secure?_unsynced", "secure_unsynced"
+    alias_method :"secure?_unsynced", :secure_unsynced
 
     # @private
     # @since 2.1.0
     def oper_unsynced
       attr(:oper?, true, true)
     end
-    alias_method :"oper?_unsynced", "oper_unsynced"
+    alias_method :"oper?_unsynced", :oper_unsynced
 
     # By default, you can use methods like {#user}, {#host} and
     # alike – If you however fear that another thread might change

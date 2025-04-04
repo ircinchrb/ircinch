@@ -40,7 +40,7 @@ module Cinch
         result = 1
         while e > 0
           result = (result * b) % m if e[0] == 1
-          e = e >> 1
+          e >>= 1
           b = (b * b) % m
         end
         result

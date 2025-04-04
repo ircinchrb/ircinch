@@ -12,7 +12,7 @@ class Module
       attr(attribute)
     end
 
-    define_method("#{attribute}_unsynced") do
+    define_method(:"#{attribute}_unsynced") do
       attr(attribute, false, true)
     end
   end

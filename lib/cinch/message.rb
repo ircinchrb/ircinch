@@ -357,7 +357,7 @@ module Cinch
     end
 
     def parse_error
-      return @command.to_i if numeric_reply? && @command[/[45]\d\d/]
+      @command.to_i if numeric_reply? && @command[/[45]\d\d/]
     end
 
     def parse_message

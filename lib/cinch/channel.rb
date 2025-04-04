@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "set"
-
 require_relative "target"
 
 module Cinch
@@ -418,7 +416,7 @@ module Cinch
         # allow colors.
         text = Cinch::Formatting.unformat(text)
       end
-      super(text, notice)
+      super
     end
     alias_method :msg, :send # deprecated
     alias_method :privmsg, :send # deprecated
