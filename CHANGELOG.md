@@ -1,3 +1,7 @@
+* IRCinch 2.4.2, 3 April 2025
+  - Improve Gemspec metadata
+  - Performance and linting improvements
+
 * IRCinch 2.4.1, 1 April 2025
   - Gemspec updates for compatibility with Ruby >= 3.4.0
   - Minor readme and documentation updates
