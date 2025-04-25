@@ -41,6 +41,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "base64"
   spec.add_development_dependency "bundler-audit"
   spec.add_development_dependency "bundler-integrity"
+  spec.add_development_dependency "irb"
   spec.add_development_dependency "minitest"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "simplecov"
