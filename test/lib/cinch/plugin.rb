@@ -21,7 +21,7 @@ class PluginTest < TestCase
   end
 
   test "should be able to specify matchers" do
-    @plugin.match(/pattern/)
+    @plugin.match(/pattern/) # standard:disable Performance/RedundantMatch
     matcher = @plugin.matchers.last
 
     assert_equal(1, @plugin.matchers.size, "Should not forget existing matchers")

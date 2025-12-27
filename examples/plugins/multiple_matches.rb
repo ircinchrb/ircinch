@@ -2,6 +2,7 @@ require "ircinch"
 
 class MultiCommands
   include Cinch::Plugin
+
   match(/command1 (.+)/, method: :command1)
   match(/command2 (.+)/, method: :command2)
   match(/^command3 (.+)/, use_prefix: false)

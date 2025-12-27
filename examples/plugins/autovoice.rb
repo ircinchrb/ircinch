@@ -8,6 +8,7 @@ require "ircinch"
 
 class Autovoice
   include Cinch::Plugin
+
   listen_to :join
   match(/autovoice (on|off)$/)
 
