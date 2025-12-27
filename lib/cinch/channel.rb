@@ -23,7 +23,7 @@ module Cinch
     synced_attr_reader :users
 
     # @return [String] the channel's topic
-    attr_accessor :topic
+    attr_reader :topic
     synced_attr_reader :topic
 
     # @return [Array<Ban>] all active bans
@@ -307,7 +307,6 @@ module Cinch
       @bot.irc.send("INVITE #{user} #{@name}")
     end
 
-    undef_method(:topic=)
     # Sets the topic.
     #
     # @param [String] new_topic the new topic
@@ -418,10 +417,6 @@ module Cinch
       end
       super
     end
-    alias_method :msg, :send # deprecated
-    alias_method :privmsg, :send # deprecated
-    undef_method(:msg) # yardoc hack
-    undef_method(:privmsg) # yardoc hack
 
     # @deprecated
     def msg(*args)
@@ -447,8 +442,6 @@ module Cinch
     def to_s
       @name
     end
-    alias_method :to_str, :to_s # deprecated
-    undef_method(:to_str) # yardoc hack
 
     def to_str
       Cinch::Utilities::Deprecation.print_deprecation("2.2.0", "Channel#to_str", "Channel#to_s")
