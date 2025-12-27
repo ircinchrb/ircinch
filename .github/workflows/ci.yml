@@ -37,11 +37,11 @@ jobs:
           path: ${{ github.workspace }}/tmp/screenshots
           if-no-files-found: ignore
 
-      - name: Lint code for consistent style
+      - name: standardrb lint code for consistent style
         run: bundle exec standardrb
 
-      - name: Patch-level verification for bundler
+      - name: bundle-audit patch-level verification for gem
         run: bundle exec bundle-audit check --update
 
-      - name: Run Bundler checksum integrity checks against RubyGems API
+      - name: bundler-integrity verification of checksum integrity against RubyGems API
         run: bundle exec bundler-integrity
