@@ -1,3 +1,9 @@
+* IRCinch 2.4.3, 27 December 2025
+  - Fix SASL auth time out by fixing IRC message parsing expression (fix by @janikrabe)
+  - Remove various duplicate methods
+  - Update standardrb configuration and lint files
+  - Improve CI build and steps
+
 * IRCinch 2.4.2, 3 April 2025
   - Improve Gemspec metadata
   - Performance and linting improvements
