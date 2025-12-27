@@ -49,7 +49,7 @@ class WireTest < TestCase
   end
 
   test "should not be able to send more than one IRC command at a time" do
-    @bot.irc.send("first\r\nsecond")
+    @bot.irc.send("first\r\nsecond") # standard:disable Performance/StringIdentifierArgument
     assert_equal "first\r\n", sent
   end
 end

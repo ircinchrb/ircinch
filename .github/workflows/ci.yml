@@ -6,23 +6,15 @@ on:
     branches: [ main ]
 
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.4
-          bundler-cache: true
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ['head', '4.0', '3.4', '3.3', '3.2']
 
-      - name: Lint code for consistent style
-        run: bundle exec standardrb
-
-  test:
-    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.ruby == 'head' }}
 
     steps:
       - name: Checkout code
@@ -31,7 +23,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.4
+          ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
       - name: Run tests
@@ -45,32 +37,11 @@ jobs:
           path: ${{ github.workspace }}/tmp/screenshots
           if-no-files-found: ignore
 
-  bundle_audit:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: standardrb lint code for consistent style
+        run: bundle exec standardrb
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.4
-          bundler-cache: true
-
-      - name: Patch-level verification for bundler
+      - name: bundle-audit patch-level verification for gem
         run: bundle exec bundle-audit check --update
 
-  bundler_integrity:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.4
-          bundler-cache: true
-
-      - name: Run Bundler checksum integrity checks against RubyGems API
+      - name: bundler-integrity verification of checksum integrity against RubyGems API
         run: bundle exec bundler-integrity

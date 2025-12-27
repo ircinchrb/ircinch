@@ -261,13 +261,11 @@ module Cinch
         @bot.irc.send "WHOIS #{@name} #{@name}"
       end
     end
-    alias_method :whois, :refresh # deprecated
-    undef_method(:whois) # yardoc hack
 
     # @deprecated
-    def whois
+    def whois(*args)
       Cinch::Utilities::Deprecation.print_deprecation("2.2.0", "User#whois", "User#refresh")
-      refresh
+      refresh(*args)
     end
 
     # @param [Hash, nil] values A hash of values gathered from WHOIS,

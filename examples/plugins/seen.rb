@@ -8,6 +8,7 @@ class Seen
   end
 
   include Cinch::Plugin
+
   listen_to :channel
   match(/seen (.+)/)
 

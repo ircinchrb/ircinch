@@ -48,10 +48,6 @@ module Cinch
         end
       end
     end
-    alias_method :msg, :send # deprecated
-    alias_method :privmsg, :send # deprecated
-    undef_method(:msg) # yardoc hack
-    undef_method(:privmsg) # yardoc hack
 
     # @deprecated
     def msg(*args)
@@ -80,21 +76,17 @@ module Cinch
     def safe_send(text, notice = false)
       send(Cinch::Helpers.sanitize(text), notice)
     end
-    alias_method :safe_msg, :safe_send # deprecated
-    alias_method :safe_privmsg, :safe_msg # deprecated
-    undef_method(:safe_msg) # yardoc hack
-    undef_method(:safe_privmsg) # yardoc hack
 
     # @deprecated
     def safe_msg(*args)
       Cinch::Utilities::Deprecation.print_deprecation("2.2.0", "Target#safe_msg", "Target#safe_send")
-      send(*args)
+      safe_send(*args)
     end
 
     # @deprecated
     def safe_privmsg(*args)
       Cinch::Utilities::Deprecation.print_deprecation("2.2.0", "Target#safe_privmsg", "Target#safe_send")
-      send(*args)
+      safe_send(*args)
     end
 
     # Like {#safe_msg} but for notices.

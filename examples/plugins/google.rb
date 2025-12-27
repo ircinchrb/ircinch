@@ -5,6 +5,7 @@ require "open-uri"
 
 class Google
   include Cinch::Plugin
+
   match(/google (.+)/)
 
   def search(query)

@@ -2,6 +2,7 @@ require "ircinch"
 
 class Nickchange
   include Cinch::Plugin
+
   listen_to :nick
 
   def listen(m)
