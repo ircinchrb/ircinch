@@ -75,7 +75,7 @@ module Cinch
       @thread_group.list.each do |thread|
         Thread.new do
           @bot.loggers.debug "[Ending thread] Waiting 10 seconds for #{thread} to finish..."
-          thread.join(10)
+          thread.join(stop_timeout)
           @bot.loggers.debug "[Killing thread] Killing #{thread}"
           thread.kill
         end
@@ -115,6 +115,12 @@ module Cinch
     def to_s
       # TODO maybe add the number of running threads to the output?
       "#<Cinch::Handler @event=#{@event.inspect} pattern=#{@pattern.inspect}>"
+    end
+
+    private
+
+    def stop_timeout
+      10
     end
   end
 end
