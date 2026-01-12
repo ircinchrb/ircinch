@@ -280,7 +280,7 @@ module Cinch
 
       class << self
         def to_symbol(string)
-          string.tr(/-/, "_").downcase.to_sym
+          string.tr("-", "_").downcase.to_sym
         end
       end
 
