@@ -352,6 +352,8 @@ module Cinch
       @join_handler = nil
       @join_timer = nil
 
+      @irc = IRC.new(self)
+
       super(nil, self)
       instance_eval(&b) if b
     end
