@@ -4,23 +4,55 @@
 # objects.
 #
 # @api private
-class OpenEndedQueue < Queue
-  # @param [Object] obj
-  # @return [void]
-  def unshift(obj)
-    t = nil
-    @mutex.synchronize {
-      @que.unshift obj
-      begin
-        t = @waiting.shift
-        t&.wakeup
-      rescue ThreadError
-        retry
-      end
-    }
-    begin
-      t&.run
-    rescue ThreadError
+class OpenEndedQueue
+  def initialize
+    @queue = []
+    @mutex = Mutex.new
+    @cv = ConditionVariable.new
+  end
+
+  def <<(obj)
+    push(obj)
+  end
+
+  def push(obj)
+    @mutex.synchronize do
+      @queue.push(obj)
+      @cv.signal
     end
+  end
+
+  def unshift(obj)
+    @mutex.synchronize do
+      @queue.unshift(obj)
+      @cv.signal
+    end
+  end
+
+  def pop(non_block = false)
+    @mutex.synchronize do
+      while @queue.empty?
+        raise ThreadError, "queue empty" if non_block
+        @cv.wait(@mutex)
+      end
+      @queue.shift
+    end
+  end
+  alias shift pop
+  alias deq pop
+  alias enq push
+
+  def empty?
+    @mutex.synchronize { @queue.empty? }
+  end
+
+  def size
+    @mutex.synchronize { @queue.size }
+  end
+
+  alias length size
+
+  def clear
+    @mutex.synchronize { @queue.clear }
   end
 end
