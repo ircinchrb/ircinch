@@ -31,7 +31,7 @@ module Cinch
     def []=(key, value)
       # FIXME also adjust method_missing
       raise ArgumentError, "Unknown option #{key}" unless self.class::KNOWN_OPTIONS.include?(key)
-      modifiable[new_ostruct_member(key)] = value
+      super
     end
 
     # Loads a configuration from a hash by merging the hash with
