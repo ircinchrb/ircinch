@@ -167,5 +167,13 @@ module Cinch
     def format_exception(message)
       message
     end
+
+    def format_fatal(message)
+      message
+    end
+
+    def format_log(message)
+      message
+    end
   end
 end
