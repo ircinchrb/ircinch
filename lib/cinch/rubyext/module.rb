@@ -23,6 +23,6 @@ class Module
   # @api private
   def synced_attr_accessor(attr)
     synced_attr_reader(attr)
-    attr_accessor(attr)
+    attr_writer(attr)
   end
 end
