@@ -38,11 +38,23 @@ module Cinch
           return handlers
         end
 
-        handlers = handlers.select { |handler|
-          msg.match(handler.pattern.to_r(msg), type, handler.strip_colors)
-        }.group_by { |handler| handler.group }
-
-        handlers.values_at(*(handlers.keys - [nil])).map(&:first) + (handlers[nil] || [])
+        groups = Set.new
+        handlers.select { |handler|
+          if msg.match(handler.pattern.to_r(msg), type, handler.strip_colors)
+            if handler.group
+              if groups.include?(handler.group)
+                false
+              else
+                groups << handler.group
+                true
+              end
+            else
+              true
+            end
+          else
+            false
+          end
+        }
       end
     end
 

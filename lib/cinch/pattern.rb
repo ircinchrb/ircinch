@@ -46,9 +46,14 @@ module Cinch
     attr_reader :pattern
     def initialize(prefix, pattern, suffix)
       @prefix, @pattern, @suffix = prefix, pattern, suffix
+      if !@prefix.is_a?(Proc) && !@pattern.is_a?(Proc) && !@suffix.is_a?(Proc)
+        @cached_regex = to_r
+      end
     end
 
     def to_r(msg = nil)
+      return @cached_regex if @cached_regex
+
       pattern = Pattern.resolve_proc(@pattern, msg)
 
       case pattern

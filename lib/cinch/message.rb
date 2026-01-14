@@ -86,6 +86,8 @@ module Cinch
     # @since 2.3.0
     attr_reader :statusmsg_mode
 
+    MSG_REGEX = /\A(?:@([^ ]+) )?(?::(\S+) )?(\S+)(.*)/
+
     def initialize(msg, bot)
       @raw = msg
       @bot = bot
@@ -99,7 +101,7 @@ module Cinch
     # @api private
     # @return [void]
     def parse
-      match = @raw.match(/\A(?:@([^ ]+) )?(?::(\S+) )?(\S+)(.*)/)
+      match = @raw.match(MSG_REGEX)
       tags, @prefix, @command, raw_params = match.captures
 
       if @bot.irc.network.ngametv?
@@ -343,7 +345,7 @@ module Cinch
       chantypes = @bot.irc.isupport["CHANTYPES"]
       statusmsg = @bot.irc.isupport["STATUSMSG"]
       if statusmsg.include?(s[0]) && chantypes.include?(s[1])
-        status = @bot.irc.isupport["PREFIX"].invert[s[0]]
+        status = @bot.irc.isupport["PREFIX"].key(s[0])
         [s[1..], status]
       elsif chantypes.include?(s[0])
         [s, nil]

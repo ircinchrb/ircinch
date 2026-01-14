@@ -12,6 +12,11 @@ module Cinch
   class IRC
     include Helpers
 
+    # @api private
+    REGISTRATION_COMMANDS = %w[001 002 003 004 422].freeze
+    # @api private
+    PRIVMSG_NOTICE_COMMANDS = %w[PRIVMSG NOTICE].freeze
+
     # @return [ISupport]
     attr_reader :isupport
 
@@ -236,7 +241,7 @@ module Cinch
       msg = Message.new(input, @bot)
       events = [[:catchall]]
 
-      if ["001", "002", "003", "004", "422"].include?(msg.command)
+      if REGISTRATION_COMMANDS.include?(msg.command)
         @registration << msg.command
         if registered?
           events << [:connect]
@@ -245,7 +250,7 @@ module Cinch
         end
       end
 
-      if ["PRIVMSG", "NOTICE"].include?(msg.command)
+      if PRIVMSG_NOTICE_COMMANDS.include?(msg.command)
         events << [:ctcp] if msg.ctcp?
         events << if msg.channel?
           [:channel]
@@ -759,8 +764,9 @@ module Cinch
       end
       @in_lists << :names
 
+      prefix_regex = /^([#{@isupport["PREFIX"].values.join}]+)/
       msg.params[3].split(" ").each do |user|
-        m = user.match(/^([#{@isupport["PREFIX"].values.join}]+)/)
+        m = user.match(prefix_regex)
         if m
           prefixes = m[1].chars.map { |s| @isupport["PREFIX"].key(s) }
           nick = user[prefixes.size..]
