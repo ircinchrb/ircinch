@@ -139,8 +139,8 @@ class DccOutgoingSendTest < TestCase
   def with_stub(klass, method, behavior)
     metaclass = class << klass; self; end
     method_name = method.to_sym
-    was_defined = metaclass.instance_methods(false).include?(method_name) ||
-      metaclass.private_instance_methods(false).include?(method_name)
+    was_defined = metaclass.method_defined?(method_name, false) ||
+      metaclass.private_method_defined?(method_name, false)
 
     if was_defined
       original = klass.method(method_name)
@@ -153,8 +153,8 @@ class DccOutgoingSendTest < TestCase
 
     yield
   ensure
-    if metaclass.instance_methods(false).include?(method_name) ||
-        metaclass.private_instance_methods(false).include?(method_name)
+    if metaclass.method_defined?(method_name, false) ||
+        metaclass.private_method_defined?(method_name, false)
       metaclass.send(:remove_method, method_name)
     end
 
