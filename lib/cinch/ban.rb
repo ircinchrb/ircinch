@@ -40,7 +40,7 @@ module Cinch
     # @raise [Exceptions::UnsupportedFeature] Cinch does not support
     #   Freenode's extended bans
     def match(user)
-      raise UnsupportedFeature, "extended bans are not supported yet" if @extended
+      raise Exceptions::UnsupportedFeature, "extended bans are not supported yet" if @extended
       @mask =~ user
     end
     alias_method :=~, :match
