@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/logger"
 
@@ -13,7 +15,7 @@ class LoggerTest < TestCase
 
   test "will_log? checks level order" do
     @logger.level = :warn
-    
+
     refute @logger.will_log?(:debug)
     refute @logger.will_log?(:info)
     assert @logger.will_log?(:warn)
@@ -40,7 +42,7 @@ class LoggerTest < TestCase
     @logger.warn("w")
     @logger.error("e")
     @logger.fatal("f")
-    
+
     out = @output.string
     assert_match "d", out
     assert_match "i", out
@@ -48,11 +50,11 @@ class LoggerTest < TestCase
     assert_match "e", out
     assert_match "f", out
   end
-  
+
   test "incoming logs as :log level" do
     @logger.level = :log # :log is between :debug and :info logic-wise in LEVEL_ORDER?
     # LEVEL_ORDER = [:debug, :log, :info, :warn, :error, :fatal]
-    
+
     @logger.incoming("in")
     assert_match "in", @output.string
   end
@@ -61,7 +63,7 @@ class LoggerTest < TestCase
     @logger.outgoing("out")
     assert_match "out", @output.string
   end
-  
+
   test "exception logs as error" do
     @logger.level = :error
     @logger.exception(StandardError.new("oops"))

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/logger_list"
 
@@ -8,13 +10,24 @@ class LoggerListTest < TestCase
       @logs = []
       @level = :debug
     end
-    def level=(l); @level = l; end
+
+    attr_writer :level
+
     def log(messages, event, level)
       @logs << [:log, messages, event, level]
     end
-    def debug(m); @logs << [:debug, m]; end
-    def info(m); @logs << [:info, m]; end
-    def error(m); @logs << [:error, m]; end
+
+    def debug(m)
+      @logs << [:debug, m]
+    end
+
+    def info(m)
+      @logs << [:info, m]
+    end
+
+    def error(m)
+      @logs << [:error, m]
+    end
   end
 
   class MockFilter
@@ -52,18 +65,18 @@ class LoggerListTest < TestCase
   test "debug/info delegates to all loggers" do
     @list.debug("dbg")
     assert_equal [:debug, "dbg"], @logger1.logs.last
-    
+
     @list.info("inf")
     assert_equal [:info, "inf"], @logger1.logs.last
   end
 
   test "filters modify or block messages" do
     @list.filters << MockFilter.new
-    
+
     @list.debug("block_me")
     assert_nil @logger1.logs.last
     assert_empty @logger1.logs
-    
+
     @list.debug("modify_me")
     assert_equal [:debug, "modified"], @logger1.logs.last
   end

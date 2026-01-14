@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/message"
 
@@ -13,14 +15,13 @@ class MessageTest < TestCase
       false
     end
   end
-  
+
   class MockISupport
     def [](key)
       case key
       when "CHANTYPES" then ["#", "&"]
       when "STATUSMSG" then ["@", "+"]
-      when "PREFIX" then { "o" => "@", "v" => "+" }
-      else nil
+      when "PREFIX" then {"o" => "@", "v" => "+"}
       end
     end
   end
@@ -29,6 +30,7 @@ class MessageTest < TestCase
     def network
       MockNetwork.new
     end
+
     def isupport
       MockISupport.new
     end
@@ -64,7 +66,7 @@ class MessageTest < TestCase
   test "parses regular PRIVMSG to channel" do
     raw = ":nick!user@host PRIVMSG #channel :hello world"
     msg = Cinch::Message.new(raw, @bot)
-    
+
     assert_equal "nick", msg.prefix[/^(\S+)!/, 1]
     assert_equal "PRIVMSG", msg.command
     assert_equal ["#channel", "hello world"], msg.params
@@ -77,7 +79,7 @@ class MessageTest < TestCase
   test "parses PRIVMSG to user" do
     raw = ":nick!user@host PRIVMSG target :private message"
     msg = Cinch::Message.new(raw, @bot)
-    
+
     assert_equal "target", msg.params.first
     refute msg.channel?
     assert_nil msg.channel
@@ -86,7 +88,7 @@ class MessageTest < TestCase
   test "parses numeric reply" do
     raw = ":server 001 nick :Welcome to IRC"
     msg = Cinch::Message.new(raw, @bot)
-    
+
     assert msg.numeric_reply?
     refute msg.error?
     assert_equal "001", msg.command
@@ -95,7 +97,7 @@ class MessageTest < TestCase
   test "parses error reply" do
     raw = ":server 404 nick #channel :Cannot join channel"
     msg = Cinch::Message.new(raw, @bot)
-    
+
     assert msg.error?
     assert_equal 404, msg.error
   end
@@ -103,7 +105,7 @@ class MessageTest < TestCase
   test "parses CTCP ACTION" do
     raw = ":nick!user@host PRIVMSG #channel :\001ACTION dances\001"
     msg = Cinch::Message.new(raw, @bot)
-    
+
     assert msg.ctcp?
     assert msg.action?
     assert_equal "dances", msg.action_message
@@ -113,7 +115,7 @@ class MessageTest < TestCase
   test "parses standard CTCP" do
     raw = ":nick!user@host PRIVMSG #channel :\001VERSION\001"
     msg = Cinch::Message.new(raw, @bot)
-    
+
     assert msg.ctcp?
     refute msg.action?
     assert_equal "VERSION", msg.ctcp_command
@@ -122,15 +124,15 @@ class MessageTest < TestCase
   test "parses tags" do
     raw = "@key=value;flag :nick!user@host PRIVMSG #channel :msg"
     msg = Cinch::Message.new(raw, @bot)
-    
+
     assert_equal({key: "value", flag: "flag"}, msg.tags)
   end
-  
+
   test "parses statusmsg prefix" do
     # @#channel means to ops only
     raw = ":nick!user@host PRIVMSG @#channel :secret"
     msg = Cinch::Message.new(raw, @bot)
-    
+
     assert_equal "o", msg.statusmsg_mode
     assert_equal "Channel(#channel)", msg.channel
   end

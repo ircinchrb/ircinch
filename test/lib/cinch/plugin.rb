@@ -175,7 +175,7 @@ end
 class PluginStructureTest < TestCase
   class TestPlugin
     include Cinch::Plugin
-    
+
     match "foo"
     listen_to :channel
     timer 5, method: :my_timer
@@ -207,20 +207,20 @@ class PluginStructureTest < TestCase
     assert_equal 1, hooks[:pre].size
     assert_equal :my_hook, hooks[:pre].first.method
   end
-  
+
   test "plugin_name inference" do
     assert_equal "testplugin", TestPlugin.plugin_name
   end
-  
+
   test "manual plugin_name" do
-    class NamedPlugin
+    named_plugin = Class.new do
       include Cinch::Plugin
+
       self.plugin_name = "custom"
     end
-    assert_equal "custom", NamedPlugin.plugin_name
+    assert_equal "custom", named_plugin.plugin_name
   end
 end
-
 
 class PluginLifecycleTest < TestCase
   def setup
@@ -229,20 +229,30 @@ class PluginLifecycleTest < TestCase
   end
 
   test "registers matchers with the bot" do
-    plugin_class = Class.new { include Cinch::Plugin; match "foo" }
+    plugin_class = Class.new {
+      include Cinch::Plugin
+
+      match "foo"
+    }
+
     plugin_class.plugin_name = "test"
-    
+
     plugin_class.new(@bot)
-    
+
     handler = @bot.handlers.detect { |h| h.pattern.pattern == "foo" }
     refute_nil handler
   end
 
   test "registers listeners with the bot" do
-    plugin_class = Class.new { include Cinch::Plugin; listen_to :join }
+    plugin_class = Class.new {
+      include Cinch::Plugin
+
+      listen_to :join
+    }
+
     plugin_class.plugin_name = "listener_test"
     plugin_class.new(@bot)
-    
+
     handler = @bot.handlers.detect { |h| h.event == :join }
     refute_nil handler
   end
@@ -250,67 +260,74 @@ class PluginLifecycleTest < TestCase
   test "aborts execution if pre-hook returns false" do
     plugin_class = Class.new do
       include Cinch::Plugin
+
       hook :pre, method: :my_hook
       match "foo"
-      
+
       attr_reader :hook_called, :match_called
-      
+
       def my_hook(m)
         @hook_called = true
         false # Abort
       end
-      
+
       def execute(m)
         @match_called = true
       end
     end
     plugin_class.plugin_name = "hook_test"
-    
+
     plugin = plugin_class.new(@bot)
-    
+
     # Dispatch a message that matches "foo"
     # We need to manually invoke the handler found in bot
     handler = @bot.handlers.detect { |h| h.pattern.pattern == "foo" }
-    
+
     msg = OpenStruct.new(params: []) # dummy message
-    
+
     t = handler.call(msg, [], [])
     t.join
-    
+
     assert plugin.hook_called
     refute plugin.match_called
   end
 
   test "unregister removes handlers" do
-    plugin_class = Class.new { include Cinch::Plugin; match "foo" }
+    plugin_class = Class.new {
+      include Cinch::Plugin
+
+      match "foo"
+    }
+
     plugin_class.plugin_name = "unregister_test"
     plugin = plugin_class.new(@bot)
-    
+
     assert_equal 1, @bot.handlers.count { |h| h.pattern.pattern == "foo" }
-    
+
     plugin.unregister
-    
+
     assert_equal 0, @bot.handlers.count { |h| h.pattern.pattern == "foo" }
   end
-  
+
   test "required options enforcement" do
-     plugin_class = Class.new { 
-       include Cinch::Plugin
-       self.plugin_name = "options_test"
-       self.required_options = [:required_key]
-     }
-     
-     # Spy on loggers to check for warning
-     log_output = []
-     @bot.loggers.define_singleton_method(:warn) { |msg| log_output << msg }
-     
-     plugin = plugin_class.new(@bot)
-     
-     # Should warn
-     assert_includes log_output.join, "Could not register plugin"
-     
-     # Should not register anything (no matchers anyway, but check lifecycle)
-     # Since it returns early, handlers list should be empty (though new instance empty anyway)
-     assert_empty plugin.handlers
+    plugin_class = Class.new {
+      include Cinch::Plugin
+
+      self.plugin_name = "options_test"
+      self.required_options = [:required_key]
+    }
+
+    # Spy on loggers to check for warning
+    log_output = []
+    @bot.loggers.define_singleton_method(:warn) { |msg| log_output << msg }
+
+    plugin = plugin_class.new(@bot)
+
+    # Should warn
+    assert_includes log_output.join, "Could not register plugin"
+
+    # Should not register anything (no matchers anyway, but check lifecycle)
+    # Since it returns early, handlers list should be empty (though new instance empty anyway)
+    assert_empty plugin.handlers
   end
 end

@@ -138,7 +138,10 @@ class TargetTest < TestCase
       @sends = []
       @isupport = {"CASEMAPPING" => :rfc1459, "CHANTYPES" => ["#"]}
     end
-    def send(msg); @sends << msg; end
+
+    def send(msg)
+      @sends << msg
+    end
   end
 
   class MockBot
@@ -150,7 +153,7 @@ class TargetTest < TestCase
       @user_list = []
       @channel_list = []
     end
-    
+
     def isupport
       @irc.isupport
     end
@@ -162,12 +165,12 @@ class TargetTest < TestCase
   end
 
   test "send uses PRIVMSG by default" do
-    @target.send("hello")
+    @target.send(:hello)
     assert_equal "PRIVMSG target :hello", @bot.irc.sends.last
   end
 
   test "send uses NOTICE when requested" do
-    @target.send("hello", true)
+    @target.send(:hello, true)
     assert_equal "NOTICE target :hello", @bot.irc.sends.last
   end
 
@@ -175,7 +178,7 @@ class TargetTest < TestCase
     # 512 max - prefix...
     long_msg = "a" * 600
     @target.send(long_msg)
-    
+
     assert @bot.irc.sends.size > 1
     full_sent = @bot.irc.sends.map { |s| s.split(" :").last }.join
     assert_equal long_msg, full_sent
@@ -198,7 +201,7 @@ class TargetTest < TestCase
     @target.ctcp("VERSION")
     assert_equal "PRIVMSG target :\001VERSION\001", @bot.irc.sends.last
   end
-  
+
   test "comparison" do
     t1 = Cinch::Target.new("foo", @bot)
     t2 = Cinch::Target.new("FOO", @bot)
@@ -207,23 +210,27 @@ class TargetTest < TestCase
 
   test "concretize looks up channel" do
     t = Cinch::Target.new("#chan", @bot)
-    
+
     # Mock channel list lookup
     class << @bot.channel_list
-      def find_ensured(name); :found_channel; end
+      def find_ensured(name)
+        :found_channel
+      end
     end
-    
+
     assert_equal :found_channel, t.concretize
   end
 
   test "concretize looks up user" do
     t = Cinch::Target.new("user", @bot)
-    
+
     # Mock user list lookup
     class << @bot.user_list
-      def find_ensured(name); :found_user; end
+      def find_ensured(name)
+        :found_user
+      end
     end
-    
+
     assert_equal :found_user, t.concretize
   end
 
@@ -242,7 +249,7 @@ class TargetTest < TestCase
     @target.safe_notice("foo\x03bar")
     assert_equal "NOTICE target :foobar", @bot.irc.sends.last
   end
-  
+
   test "safe_action sanitizes input" do
     @target.safe_action("dances\x03")
     assert_equal "PRIVMSG target :\001ACTION dances\001", @bot.irc.sends.last

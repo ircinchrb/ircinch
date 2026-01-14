@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/bot"
 
@@ -8,25 +10,41 @@ class BotTest < TestCase
     def initialize(bot)
       @network = OpenStruct.new(unknown_network: true)
       @sent = []
-      @isupport = { "NICKLEN" => 9 }
+      @isupport = {"NICKLEN" => 9}
     end
-    def setup; end
-    def send(msg); @sent << msg; end
+
+    def setup
+    end
+
+    def send(msg)
+      @sent << msg
+    end
   end
-  
+
   class MockLoggerList
-    def debug(msg); end
-    def info(msg); end
-    def error(msg); end
+    def debug(msg)
+    end
+
+    def info(msg)
+    end
+
+    def error(msg)
+    end
   end
 
   class MockChannel
     attr_reader :name
-    def initialize(name, bot); @name = name; end
-    def join(key=nil); end
-    def part(reason=nil); end
+    def initialize(name, bot)
+      @name = name
+    end
+
+    def join(key = nil)
+    end
+
+    def part(reason = nil)
+    end
   end
-  
+
   def setup
     @bot = Cinch::Bot.new
     @bot.loggers.clear # silence logs
@@ -53,7 +71,7 @@ class BotTest < TestCase
         c.server = "localhost"
       end
     end
-    
+
     assert_equal "testbot", bot.config.nick
     assert_equal "localhost", bot.config.server
   end
@@ -64,13 +82,13 @@ class BotTest < TestCase
     assert @bot.quitting
     assert_includes @mock_irc.sent, "QUIT :reason"
   end
-  
+
   test "bot is a user" do
     assert_kind_of Cinch::User, @bot
   end
 
   test "on registers handler" do
-    @bot.on(:message, /foo/) { }
+    @bot.on(:message, /foo/) {}
     assert_includes @bot.handlers.map(&:event), :message
   end
 
@@ -84,7 +102,7 @@ class BotTest < TestCase
     @bot.config.nick = "bot"
     @bot.oper("pass")
     assert_includes @mock_irc.sent, "OPER bot pass"
-    
+
     @mock_irc.sent.clear
     @bot.oper("pass", "user")
     assert_includes @mock_irc.sent, "OPER user pass"
@@ -92,7 +110,7 @@ class BotTest < TestCase
 
   test "set_mode/unset_mode sends MODE" do
     @bot.config.nick = "bot"
-    
+
     @bot.set_mode("x")
     assert_includes @mock_irc.sent, "MODE bot +x"
     assert_includes @bot.modes, "x"
@@ -107,7 +125,7 @@ class BotTest < TestCase
     @bot.config.nick = "bot"
     @bot.set_mode("a")
     @mock_irc.sent.clear
-    
+
     @bot.modes = ["b"]
     # Should unset a and set b
     assert_includes @mock_irc.sent, "MODE bot -a"
@@ -118,10 +136,10 @@ class BotTest < TestCase
   test "generate_next_nick! rotation" do
     @bot.config.nicks = ["bot", "bot_"]
     @bot.config.nick = "bot"
-    
+
     @bot.generate_next_nick!("bot")
     assert_equal "bot_", @bot.config.nick
-    
+
     @bot.generate_next_nick!("bot_")
     assert_equal "bot__", @bot.config.nick
   end
@@ -133,15 +151,18 @@ class BotTest < TestCase
     end
     assert yielded
   end
-  
+
   test "join delegates to Channel" do
     channel = MockChannel.new("#foo", @bot)
-    
+
     # Manually stub Channel helper on bot instance
     @bot.define_singleton_method(:Channel) { |name| channel }
-    
-    channel.define_singleton_method(:join) { |key=nil| @joined = true; @key = key }
-    
+
+    channel.define_singleton_method(:join) { |key = nil|
+      @joined = true
+      @key = key
+    }
+
     @bot.join("#foo", "key")
     assert channel.instance_variable_get(:@joined)
     assert_equal "key", channel.instance_variable_get(:@key)
@@ -149,11 +170,14 @@ class BotTest < TestCase
 
   test "part delegates to Channel" do
     channel = MockChannel.new("#foo", @bot)
-    
+
     @bot.define_singleton_method(:Channel) { |name| channel }
-    
-    channel.define_singleton_method(:part) { |reason=nil| @parted = true; @reason = reason }
-    
+
+    channel.define_singleton_method(:part) { |reason = nil|
+      @parted = true
+      @reason = reason
+    }
+
     @bot.part("#foo", "bye")
     assert channel.instance_variable_get(:@parted)
     assert_equal "bye", channel.instance_variable_get(:@reason)

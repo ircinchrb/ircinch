@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/open_ended_queue"
 
@@ -19,13 +21,13 @@ class OpenEndedQueueTest < TestCase
     assert_equal 2, @queue.shift
     assert_equal 1, @queue.shift
   end
-  
+
   test "unshift should wake up waiting threads" do
     t = Thread.new { @queue.shift }
     # Give the thread time to block
     Thread.pass
     sleep 0.1
-    
+
     @queue.unshift(:woke)
     assert_equal :woke, t.value
   end

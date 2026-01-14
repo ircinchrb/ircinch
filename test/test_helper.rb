@@ -18,30 +18,30 @@ class TestCase < Minitest::Test
   def with_stub(klass, method, behavior)
     metaclass = class << klass; self; end
     method_name = method.to_sym
-    
-    was_defined = metaclass.instance_methods(false).include?(method_name) || 
-                  metaclass.private_instance_methods(false).include?(method_name)
-    
+
+    was_defined = metaclass.instance_methods(false).include?(method_name) ||
+      metaclass.private_instance_methods(false).include?(method_name)
+
     if was_defined
-       original = klass.method(method_name)
-       metaclass.send(:remove_method, method_name)
+      original = klass.method(method_name)
+      metaclass.send(:remove_method, method_name)
     end
 
     metaclass.send(:define_method, method_name) do |*args|
       behavior.call(*args)
     end
-    
+
     yield
   ensure
     # Restore
     metaclass = class << klass; self; end
-    
+
     # Always remove the stub we created
-    if metaclass.instance_methods(false).include?(method_name) || 
-       metaclass.private_instance_methods(false).include?(method_name)
+    if metaclass.instance_methods(false).include?(method_name) ||
+        metaclass.private_instance_methods(false).include?(method_name)
       metaclass.send(:remove_method, method_name)
     end
-    
+
     # If it was originally defined locally, restore it
     if was_defined && original
       metaclass.send(:define_method, method_name, original)

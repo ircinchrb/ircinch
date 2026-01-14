@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/callback"
 
@@ -8,6 +10,7 @@ class CallbackTest < TestCase
       @synced = false
       @loggers = []
     end
+
     def synchronize(name)
       @synced = true
       yield

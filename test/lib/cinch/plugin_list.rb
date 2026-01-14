@@ -1,15 +1,18 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/plugin_list"
 
 class PluginListTest < TestCase
   class MockBot; end
-  
+
   class MockPlugin
     attr_reader :bot, :unregistered
     def initialize(bot)
       @bot = bot
       @unregistered = false
     end
+
     def unregister
       @unregistered = true
     end
@@ -35,7 +38,7 @@ class PluginListTest < TestCase
   test "unregister_plugin removes and calls unregister" do
     @list.register_plugin(MockPlugin)
     plugin = @list.first
-    
+
     @list.unregister_plugin(plugin)
     assert_empty @list
     assert plugin.unregistered
@@ -44,7 +47,7 @@ class PluginListTest < TestCase
   test "unregister_all removes all" do
     @list.register_plugins([MockPlugin, MockPlugin])
     assert_equal 2, @list.size
-    
+
     @list.unregister_all
     assert_empty @list
   end

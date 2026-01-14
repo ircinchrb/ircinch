@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/formatting"
 
@@ -38,36 +40,36 @@ class FormattingTest < TestCase
     # outer is \x1FStart \x02bold\x0F End\x0F
     # But wait, implementation does: string.delete!(attribute_string)
     # And replaces reset code.
-    
+
     # Outer prepend: \x1F (underline)
     # Inner string: \x02bold\x0F (reset is \x0F)
-    
+
     # string.delete!("\x1F") -> no change (inner doesn't have underline)
-    
+
     # string.gsub!(reset, reset + prepend)
     # \x0F becomes \x0F\x1F
-    
+
     # Result: \x1FStart \x02bold\x0F\x1F End\x0F
-    
+
     # Let's verify exact expectation
     # The 'reset' is 15.chr which is \x0F.
-    
+
     expected = "\x1FStart \x02bold\x0F\x1F End\x0F"
     assert_equal expected, outer
   end
-  
+
   test "nested formatting removes duplicate attributes" do
     # format(:bold, format(:bold, "text"))
     inner = Cinch::Formatting.format(:bold, "text") # \x02text\x0F
     outer = Cinch::Formatting.format(:bold, inner)
-    
+
     # Outer prepend: \x02
     # Inner: \x02text\x0F
     # string.delete!("\x02") -> "text\x0F"
     # string.gsub!(\x0F, \x0F\x02) -> "text\x0F\x02"
     # Result: "\x02" + "text\x0F\x02" + "\x0F"
     # "\x02text\x0F\x02\x0F"
-    
+
     expected = "\x02text\x0F\x02\x0F"
     assert_equal expected, outer
   end

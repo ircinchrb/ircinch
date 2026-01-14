@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../../../test_helper"
 require "cinch/dcc/incoming/send"
 require "cinch/user"
@@ -8,7 +10,10 @@ class DccIncomingSendTest < TestCase
 
   class MockSocket
     attr_accessor :closed
-    def initialize(*args); @closed = false; end
+    def initialize(*args)
+      @closed = false
+    end
+
     # Simulate data read
     def readpartial(size)
       if @read_done
@@ -18,8 +23,13 @@ class DccIncomingSendTest < TestCase
         "file content"
       end
     end
-    def write_nonblock(data); end
-    def close; @closed = true; end
+
+    def write_nonblock(data)
+    end
+
+    def close
+      @closed = true
+    end
   end
 
   def setup
@@ -50,7 +60,7 @@ class DccIncomingSendTest < TestCase
       port: 80
     )
     assert_equal "foo.txt", dcc.filename
-    
+
     dcc2 = Cinch::DCC::Incoming::Send.new(
       user: @user,
       filename: "C:\\temp\\foo.txt",
@@ -60,18 +70,18 @@ class DccIncomingSendTest < TestCase
     )
     # On non-Windows, File.basename won't split by \, so they are just removed.
     # We verify that they are removed at least.
-    expected = RUBY_PLATFORM =~ /mswin|mingw|cygwin/ ? "foo.txt" : "C:tempfoo.txt"
+    expected = RUBY_PLATFORM.match?(/mswin|mingw|cygwin/) ? "foo.txt" : "C:tempfoo.txt"
     assert_equal expected, dcc2.filename
   end
 
   test "accept downloads data" do
     mock_socket = MockSocket.new
     io = StringIO.new
-    
-    with_stub(TCPSocket, :new, ->(ip, port) { 
+
+    with_stub(TCPSocket, :new, ->(ip, port) {
       assert_equal "127.0.0.1", ip
       assert_equal 12345, port
-      mock_socket 
+      mock_socket
     }) do
       result = @dcc.accept(io)
       assert result
@@ -83,7 +93,7 @@ class DccIncomingSendTest < TestCase
   test "private ip detection" do
     dcc = Cinch::DCC::Incoming::Send.new(ip: "192.168.1.50", port: 1, filename: "a", size: 1, user: @user)
     assert dcc.from_private_ip?
-    
+
     dcc2 = Cinch::DCC::Incoming::Send.new(ip: "8.8.8.8", port: 1, filename: "a", size: 1, user: @user)
     refute dcc2.from_private_ip?
   end
@@ -91,7 +101,7 @@ class DccIncomingSendTest < TestCase
   test "localhost detection" do
     dcc = Cinch::DCC::Incoming::Send.new(ip: "127.0.0.1", port: 1, filename: "a", size: 1, user: @user)
     assert dcc.from_localhost?
-    
+
     dcc2 = Cinch::DCC::Incoming::Send.new(ip: "8.8.8.8", port: 1, filename: "a", size: 1, user: @user)
     refute dcc2.from_localhost?
   end

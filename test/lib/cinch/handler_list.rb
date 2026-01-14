@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/handler_list"
 
@@ -7,11 +9,13 @@ class HandlerListTest < TestCase
       ""
     end
   end
+
   class MockMessage
     def match(regexp, event, strip_colors)
       # Return a match data object or nil
       "test message".match(regexp)
     end
+
     def params
       MockParams.new
     end
@@ -21,6 +25,7 @@ class HandlerListTest < TestCase
     def to_r(msg = nil)
       /test/
     end
+
     def inspect
       "/test/"
     end
@@ -32,8 +37,10 @@ class HandlerListTest < TestCase
       @loggers = MockLoggerList.new
     end
   end
+
   class MockLoggerList
-    def debug(msg); end
+    def debug(msg)
+    end
   end
 
   class MockHandler
@@ -50,8 +57,9 @@ class HandlerListTest < TestCase
     def call(msg, captures, args)
       Thread.new { @block.call(msg, captures, args) }
     end
-    
-    def stop; end
+
+    def stop
+    end
   end
 
   def setup
@@ -82,8 +90,13 @@ class HandlerListTest < TestCase
   test "find with message filters by pattern" do
     handler1 = MockHandler.new(@bot, :message, MockPattern.new) # matches "test"
     handler2 = MockHandler.new(@bot, :message, Object.new) # Mock pattern fail
-    def (handler2.pattern).to_r(msg); /nomatch/; end
-    def (handler2.pattern).inspect; "/nomatch/"; end
+    def (handler2.pattern).to_r(msg)
+      /nomatch/
+    end
+
+    def (handler2.pattern).inspect
+      "/nomatch/"
+    end
 
     @list.register(handler1)
     @list.register(handler2)
@@ -93,14 +106,14 @@ class HandlerListTest < TestCase
     assert_includes result, handler1
     refute_includes result, handler2
   end
-  
+
   test "find handles groups" do
     # Handlers in same group should only return the first one
     h1 = MockHandler.new(@bot, :message, MockPattern.new, :group1)
     h2 = MockHandler.new(@bot, :message, MockPattern.new, :group1)
     @list.register(h1)
     @list.register(h2)
-    
+
     msg = MockMessage.new
     result = @list.find(:message, msg)
     assert_equal 1, result.size
@@ -113,10 +126,10 @@ class HandlerListTest < TestCase
       called = true
     end
     @list.register(handler)
-    
+
     threads = @list.dispatch(:message, MockMessage.new)
     threads.each(&:join)
-    
+
     assert called
   end
 end

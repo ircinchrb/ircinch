@@ -78,7 +78,7 @@ class MaskTest < TestCase
     m = Cinch::Mask.new("nick!user@host")
     assert_same m, Cinch::Mask.from(m)
   end
-  
+
   test "raises error for malformed mask" do
     # Assuming current implementation raises NoMethodError
     assert_raises(NoMethodError) { Cinch::Mask.new("malformed") }

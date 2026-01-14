@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/channel_list"
 require "cinch/channel"
@@ -49,7 +51,7 @@ class ChannelListTest < TestCase
     c2 = @list.find("#CHANNEL")
     assert_same c1, c2
   end
-  
+
   test "find_ensured returns existing channel (case insensitive)" do
     c1 = @list.find_ensured("#channel")
     c2 = @list.find_ensured("#CHANNEL")

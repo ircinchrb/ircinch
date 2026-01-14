@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/mode_parser"
 
@@ -15,21 +17,21 @@ class ModeParserTest < TestCase
   end
 
   test "should handle parameters for adding modes" do
-    param_modes = { add: ["o", "v"], remove: ["o", "v"] }
+    param_modes = {add: ["o", "v"], remove: ["o", "v"]}
     changes, error = Cinch::ModeParser.parse_modes("+o", ["user1"], param_modes)
     assert_nil error
     assert_equal [[:add, "o", "user1"]], changes
   end
 
   test "should handle parameters for removing modes" do
-    param_modes = { add: ["o"], remove: ["o"] }
+    param_modes = {add: ["o"], remove: ["o"]}
     changes, error = Cinch::ModeParser.parse_modes("-o", ["user1"], param_modes)
     assert_nil error
     assert_equal [[:remove, "o", "user1"]], changes
   end
 
   test "should handle mixed modes with and without parameters" do
-    param_modes = { add: ["k"], remove: [] }
+    param_modes = {add: ["k"], remove: []}
     changes, error = Cinch::ModeParser.parse_modes("+ik-s", ["key"], param_modes)
     assert_nil error
     assert_equal [
@@ -56,12 +58,12 @@ class ModeParserTest < TestCase
   end
 
   test "should return error for trailing +" do
-    _, error = Cinch::ModeParser.parse_modes("+o+", ["param"], {add:['o']})
+    _, error = Cinch::ModeParser.parse_modes("+o+", ["param"], {add: ["o"]})
     assert_instance_of Cinch::ModeParser::EmptySequenceError, error
   end
 
   test "should return error for not enough parameters" do
-    param_modes = { add: ["k"] }
+    param_modes = {add: ["k"]}
     _, error = Cinch::ModeParser.parse_modes("+k", [], param_modes)
     assert_instance_of Cinch::ModeParser::NotEnoughParametersError, error
     assert_equal "k", error.op

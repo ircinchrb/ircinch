@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/i_support"
 
@@ -75,7 +77,7 @@ class ISupportTest < TestCase
     assert @isupport["NAMESX"]
     assert @isupport["UHNAMES"]
   end
-  
+
   test "parse handles casemapping" do
     @isupport.parse("CASEMAPPING=ascii")
     assert_equal :ascii, @isupport["CASEMAPPING"]

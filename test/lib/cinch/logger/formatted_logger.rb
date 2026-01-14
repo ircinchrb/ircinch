@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../../test_helper"
 require "cinch/logger/formatted_logger"
 require "stringio"
@@ -14,7 +16,7 @@ class FormattedLoggerTest < TestCase
     rescue => e
       @logger.exception(e)
     end
-    
+
     output = @io.string
     assert_match "test error", output
     assert_match "FormattedLoggerTest", output
@@ -27,8 +29,10 @@ class FormattedLoggerTest < TestCase
 
   test "format_general escapes non-printable on tty" do
     # Verify tty behavior by mocking tty?
-    def @io.tty?; true; end
-    
+    def @io.tty?
+      true
+    end
+
     @logger.log("foo\x00bar", :debug)
     # \x00 should be replaced/colorized
     output = @io.string
@@ -48,14 +52,16 @@ class FormattedLoggerTest < TestCase
     # Format: :prefix command params :message
     msg = ":nick!user@host PRIVMSG #channel :hello world"
     @logger.log(msg, :incoming, :log)
-    
+
     assert_match "nick!user@host", @io.string
     assert_match "PRIVMSG", @io.string
     assert_match "#channel", @io.string
     assert_match "hello world", @io.string
-    
+
     # Check green arrow ">>" if tty
-    def @io.tty?; true; end
+    def @io.tty?
+      true
+    end
     @io.truncate(0)
     @io.rewind
     @logger.log(msg, :incoming, :log)
@@ -65,19 +71,23 @@ class FormattedLoggerTest < TestCase
   test "format_outgoing formats message" do
     msg = "PRIVMSG #channel :hello world"
     @logger.log(msg, :outgoing, :log)
-    
+
     assert_match "PRIVMSG", @io.string
     assert_match "<<", @io.string
   end
-  
+
   test "colorize works only on tty - true" do
-    def @io.tty?; true; end
+    def @io.tty?
+      true
+    end
     @logger.log("test", :debug)
     assert_match "\e[", @io.string
   end
 
   test "colorize works only on tty - false" do
-    def @io.tty?; false; end
+    def @io.tty?
+      false
+    end
     @logger.log("test", :debug)
     refute_match "\e[", @io.string
   end

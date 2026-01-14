@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../test_helper"
 require "cinch/pattern"
 
@@ -22,7 +24,7 @@ class PatternTest < TestCase
   end
 
   test "resolve_proc recursively resolves procs" do
-    p = Proc.new { Proc.new { "val" } }
+    p = proc { proc { "val" } }
     assert_equal "val", Cinch::Pattern.resolve_proc(p)
   end
 
@@ -53,7 +55,7 @@ class PatternTest < TestCase
     assert_match(p.to_r, "foo")
     refute_match(p.to_r, " bar foo ")
   end
-  
+
   test "to_r resolves strings to regexps with escaping" do
     p = Cinch::Pattern.new("pre.", "foo.", "suf.")
     # Should match "pre.foo.suf." strictly (anchored by implementation)
@@ -62,10 +64,10 @@ class PatternTest < TestCase
     assert_match(r, "pre.foo.suf.")
     refute_match(r, "preXfooXsufX")
   end
-  
+
   test "to_r resolves procs" do
     # Strings in procs are escaped
-    p = Cinch::Pattern.new(proc{"^"}, proc{"foo"}, proc{"$"})
+    p = Cinch::Pattern.new(proc { "^" }, proc { "foo" }, proc { "$" })
     r = p.to_r
     # Matches literal "^foo$"
     assert_match(r, "^foo$")

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 require_relative "../../test_helper"
 require "cinch/helpers"
@@ -6,6 +7,7 @@ require "cinch/plugin"
 class HelpersTest < TestCase
   class TestPlugin
     include Cinch::Plugin
+
     # Cinch::Plugin includes Helpers automatically
     attr_reader :bot
     def initialize(bot)
@@ -13,7 +15,9 @@ class HelpersTest < TestCase
       @timers = []
       @files = [] # Helpers uses this too? No, verify plugin.rb
     end
-    def foo; end
+
+    def foo
+    end
   end
 
   class MockBot
@@ -34,16 +38,45 @@ class HelpersTest < TestCase
 
   class MockLoggerList
     attr_reader :logs
-    def initialize; @logs = []; end
-    def exception(e); @logs << e; end
-    def log(m, e, l); @logs << [m, e, l]; end
-    def debug(m); @logs << [:debug, m]; end
-    def error(m); @logs << [:error, m]; end
-    def fatal(m); @logs << [:fatal, m]; end
-    def info(m); @logs << [:info, m]; end
-    def warn(m); @logs << [:warn, m]; end
-    def incoming(m); @logs << [:incoming, m]; end
-    def outgoing(m); @logs << [:outgoing, m]; end
+    def initialize
+      @logs = []
+    end
+
+    def exception(e)
+      @logs << e
+    end
+
+    def log(m, e, l)
+      @logs << [m, e, l]
+    end
+
+    def debug(m)
+      @logs << [:debug, m]
+    end
+
+    def error(m)
+      @logs << [:error, m]
+    end
+
+    def fatal(m)
+      @logs << [:fatal, m]
+    end
+
+    def info(m)
+      @logs << [:info, m]
+    end
+
+    def warn(m)
+      @logs << [:warn, m]
+    end
+
+    def incoming(m)
+      @logs << [:incoming, m]
+    end
+
+    def outgoing(m)
+      @logs << [:outgoing, m]
+    end
   end
 
   def setup
@@ -67,7 +100,7 @@ class HelpersTest < TestCase
   test "User helper" do
     u = @plugin.User("user")
     assert_equal "user", u
-    
+
     # Special case: bot nick
     u_bot = @plugin.User("bot")
     assert_equal @bot, u_bot
@@ -78,6 +111,7 @@ class HelpersTest < TestCase
     def initialize
       @started = false
     end
+
     def start
       @started = true
     end
@@ -85,8 +119,8 @@ class HelpersTest < TestCase
 
   test "Timer helper" do
     mock_timer = MockTimer.new
-    
-    # We need to stub Cinch::Timer.new. 
+
+    # We need to stub Cinch::Timer.new.
     # Since Cinch::Timer is a class, we stub :new on it.
     with_stub(Cinch::Timer, :new, ->(*args, &block) { mock_timer }) do
       t = @plugin.Timer(1, method: :foo)
@@ -102,39 +136,39 @@ class HelpersTest < TestCase
     end
     assert_equal e, @bot.loggers.logs.last
   end
-  
+
   test "Format/Color helper" do
     # Format might append reset explicitly if not present?
     # Actually Format(color, string) produces "\x03" + "code" + string + "\x0F"
-    
+
     assert_equal "\x0304text\x0F", @plugin.Format(:red, "text")
-    
+
     # deprecation prints to stderr
     _, err = capture_io do
       assert_equal "\x0304text\x0F", @plugin.Color(:red, "text")
     end
     assert_match(/Deprecation/, err)
   end
-  
+
   test "Sanitize helper" do
     assert_equal "foobar", @plugin.Sanitize("foo\nbar")
     assert_equal "ab", @plugin.Sanitize("a\r\nb")
   end
-  
+
   test "Unformat helper" do
     assert_equal "text", @plugin.Unformat("\x0304text\x03")
   end
-  
+
   test "Logging helpers" do
     @plugin.debug("d")
     # log(messages, event, level)
     # messages is array
     last_log = @bot.loggers.logs.last
     # last_log = [messages, event, level]
-    
+
     messages = last_log[0]
     event = last_log[1]
-    
+
     assert_equal :debug, event
     assert_match(/\[HelpersTest::TestPlugin\] d/, messages.first)
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../../test_helper"
 require "cinch/sasl/diffie_hellman"
 
@@ -8,7 +10,7 @@ class DiffieHellmanTest < TestCase
     @g = 5
     @q = 22 # p-1? No, q is usually (p-1)/2 or similar but here code takes simple args
     # Code: @x = rand(@q)
-    
+
     @dh = Cinch::SASL::DiffieHellman.new(@p, @g, @q)
   end
 
@@ -29,15 +31,15 @@ class DiffieHellmanTest < TestCase
     # Alice
     alice = Cinch::SASL::DiffieHellman.new(23, 5, 23)
     alice_pub = alice.generate
-    
+
     # Bob
     bob = Cinch::SASL::DiffieHellman.new(23, 5, 23)
     bob_pub = bob.generate
-    
+
     # Shared secret
     alice_secret = alice.secret(bob_pub)
     bob_secret = bob.secret(alice_pub)
-    
+
     assert_equal alice_secret, bob_secret
   end
 end
