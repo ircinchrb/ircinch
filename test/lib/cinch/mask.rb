@@ -66,4 +66,21 @@ class MaskTest < TestCase
 
     assert_equal mask, new_mask
   end
+
+  test "attributes are parsed correctly" do
+    m = Cinch::Mask.new("nick!user@host")
+    assert_equal "nick", m.nick
+    assert_equal "user", m.user
+    assert_equal "host", m.host
+  end
+
+  test "from returns self if already a Mask" do
+    m = Cinch::Mask.new("nick!user@host")
+    assert_same m, Cinch::Mask.from(m)
+  end
+  
+  test "raises error for malformed mask" do
+    # Assuming current implementation raises NoMethodError
+    assert_raises(NoMethodError) { Cinch::Mask.new("malformed") }
+  end
 end

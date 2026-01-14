@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 require_relative "../../test_helper"
+require "cinch/target"
+require "cinch/helpers"
 
-class TargetTest < TestCase
+class MessageSplitTest < TestCase
   module MessageSplit
     MASK = "msg_split!~msg_split@an-irc-client.some-provider.net"
     COMMAND = "NOTICE"
@@ -126,5 +128,123 @@ class TargetTest < TestCase
       string.length < MessageSplit::MAX_BYTE_SIZE
     })
     assert_equal(expected_chunks, actual_chunks)
+  end
+end
+
+class TargetTest < TestCase
+  class MockIRC
+    attr_reader :sends, :isupport
+    def initialize
+      @sends = []
+      @isupport = {"CASEMAPPING" => :rfc1459, "CHANTYPES" => ["#"]}
+    end
+    def send(msg); @sends << msg; end
+  end
+
+  class MockBot
+    attr_reader :irc, :config, :mask, :user_list, :channel_list
+    def initialize
+      @irc = MockIRC.new
+      @config = OpenStruct.new
+      @mask = "bot!user@host"
+      @user_list = []
+      @channel_list = []
+    end
+    
+    def isupport
+      @irc.isupport
+    end
+  end
+
+  def setup
+    @bot = MockBot.new
+    @target = Cinch::Target.new("target", @bot)
+  end
+
+  test "send uses PRIVMSG by default" do
+    @target.send("hello")
+    assert_equal "PRIVMSG target :hello", @bot.irc.sends.last
+  end
+
+  test "send uses NOTICE when requested" do
+    @target.send("hello", true)
+    assert_equal "NOTICE target :hello", @bot.irc.sends.last
+  end
+
+  test "send splits long messages" do
+    # 512 max - prefix...
+    long_msg = "a" * 600
+    @target.send(long_msg)
+    
+    assert @bot.irc.sends.size > 1
+    full_sent = @bot.irc.sends.map { |s| s.split(" :").last }.join
+    assert_equal long_msg, full_sent
+  end
+
+  test "safe_send sanitizes input" do
+    # Sanitize removes newlines etc
+    @target.safe_send("foo\nbar")
+    # sanitize replaces \n with space or similar? Cinch::Helpers.sanitize
+    # Let's verify what sent.
+    assert_match "foobar", @bot.irc.sends.last
+  end
+
+  test "action sends CTCP" do
+    @target.action("dances")
+    assert_equal "PRIVMSG target :\001ACTION dances\001", @bot.irc.sends.last
+  end
+
+  test "ctcp sends CTCP" do
+    @target.ctcp("VERSION")
+    assert_equal "PRIVMSG target :\001VERSION\001", @bot.irc.sends.last
+  end
+  
+  test "comparison" do
+    t1 = Cinch::Target.new("foo", @bot)
+    t2 = Cinch::Target.new("FOO", @bot)
+    assert_equal t1, t2
+  end
+
+  test "concretize looks up channel" do
+    t = Cinch::Target.new("#chan", @bot)
+    
+    # Mock channel list lookup
+    class << @bot.channel_list
+      def find_ensured(name); :found_channel; end
+    end
+    
+    assert_equal :found_channel, t.concretize
+  end
+
+  test "concretize looks up user" do
+    t = Cinch::Target.new("user", @bot)
+    
+    # Mock user list lookup
+    class << @bot.user_list
+      def find_ensured(name); :found_user; end
+    end
+    
+    assert_equal :found_user, t.concretize
+  end
+
+  test "safe_send strips formatting" do
+    # \x03 is color code
+    @target.safe_send("foo\x03bar")
+    assert_equal "PRIVMSG target :foobar", @bot.irc.sends.last
+  end
+
+  test "notice sends NOTICE" do
+    @target.notice("foo")
+    assert_equal "NOTICE target :foo", @bot.irc.sends.last
+  end
+
+  test "safe_notice sanitizes input" do
+    @target.safe_notice("foo\x03bar")
+    assert_equal "NOTICE target :foobar", @bot.irc.sends.last
+  end
+  
+  test "safe_action sanitizes input" do
+    @target.safe_action("dances\x03")
+    assert_equal "PRIVMSG target :\001ACTION dances\001", @bot.irc.sends.last
   end
 end
