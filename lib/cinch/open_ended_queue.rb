@@ -38,9 +38,9 @@ class OpenEndedQueue
       @queue.shift
     end
   end
-  alias shift pop
-  alias deq pop
-  alias enq push
+  alias_method :shift, :pop
+  alias_method :deq, :pop
+  alias_method :enq, :push
 
   def empty?
     @mutex.synchronize { @queue.empty? }
@@ -50,7 +50,7 @@ class OpenEndedQueue
     @mutex.synchronize { @queue.size }
   end
 
-  alias length size
+  alias_method :length, :size
 
   def clear
     @mutex.synchronize { @queue.clear }
