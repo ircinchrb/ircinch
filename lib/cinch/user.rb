@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "timeout"
+require "set"
 
 require_relative "target"
 
