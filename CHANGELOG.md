@@ -1,3 +1,8 @@
+* IRCinch 2.4.4, 14 January 2026
+  - Improve performance for high traffic channels
+  - Increase test coverage
+  - Bug fixes
+
 * IRCinch 2.4.3, 27 December 2025
   - Fix SASL auth time out by fixing IRC message parsing expression (fix by @janikrabe)
   - Remove various duplicate methods
