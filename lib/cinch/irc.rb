@@ -13,7 +13,7 @@ module Cinch
     include Helpers
 
     # @api private
-    REGISTRATION_COMMANDS = %w[001 002 003 004 422].freeze
+    REGISTRATION_COMMANDS = %w[001 002 003 004 376 422].freeze
     # @api private
     PRIVMSG_NOTICE_COMMANDS = %w[PRIVMSG NOTICE].freeze
 
@@ -284,7 +284,7 @@ module Cinch
 
     # @return [Boolean] true if we successfully registered yet
     def registered?
-      (("001".."004").to_a - @registration).empty? || @registration.include?("422")
+      (("001".."004").to_a - @registration).empty? || @registration.include?("376") || @registration.include?("422")
     end
 
     # Send a message to the server.

@@ -113,6 +113,24 @@ class IRCTest < TestCase
     assert_includes @bot.handlers.dispatched, :connect
   end
 
+  test "parse handles numeric 376 as registration" do
+    @irc.setup
+
+    @irc.parse(":server 376 bot :End of /MOTD command.")
+    assert @irc.registered?, "Should be registered after 376"
+
+    assert_includes @bot.handlers.dispatched, :connect
+  end
+
+  test "parse handles numeric 422 as registration" do
+    @irc.setup
+
+    @irc.parse(":server 376 bot :No /MOTD set up.")
+    assert @irc.registered?, "Should be registered after 422"
+
+    assert_includes @bot.handlers.dispatched, :connect
+  end
+
   test "send_login sends auth commands" do
     @bot.config.password = "secret"
     @bot.config.nick = "bot"
