@@ -5,7 +5,6 @@ require "socket"
 
 require_relative "rubyext/module"
 require_relative "rubyext/string"
-require_relative "rubyext/float"
 
 require_relative "exceptions"
 
