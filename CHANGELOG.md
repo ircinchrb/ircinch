@@ -1,5 +1,6 @@
 * Unreleased
   - Remove obsolete Float::INFINITY fallback
+  - Use monotonic timing for reconnect waits and message throttling
 
 * IRCinch 2.4.5, 7 February 2026
   - Fix issue in which bot does not join channels or set modes after connecting (fix by @snex)

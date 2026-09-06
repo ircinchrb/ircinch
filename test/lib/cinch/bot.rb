@@ -76,6 +76,38 @@ class BotTest < TestCase
     assert_equal "localhost", bot.config.server
   end
 
+  test "reconnect waits use elapsed time without reading the wall clock" do
+    @bot.config.reconnect = true
+    @bot.config.delay_joins = :connect
+    now = 100.0
+    sleeps = []
+    connections = 0
+    bot = @bot
+    @mock_irc.define_singleton_method(:start) do
+      connections += 1
+      bot.quit if connections == 2
+    end
+    @bot.define_singleton_method(:sleep) do |duration|
+      sleeps << duration
+      raise "Reconnect wait did not finish" if sleeps.size > 2
+      now += duration
+    end
+
+    with_stub(Time, :now, -> { raise "Unexpected wall clock read" }) do
+      with_stub(Process, :clock_gettime, ->(clock) {
+        assert_equal Process::CLOCK_MONOTONIC, clock
+        now
+      }) do
+        with_stub(Cinch::IRC, :new, ->(_bot) { @mock_irc }) do
+          @bot.start(false)
+        end
+      end
+    end
+
+    assert_equal 2, connections
+    assert_equal [1, 1], sleeps
+  end
+
   test "quit sets quitting flag" do
     refute @bot.quitting
     @bot.quit("reason")

@@ -81,8 +81,7 @@ class MessageQueueTest < TestCase
     @bot.config.server_queue_size = 10
 
     # Simulate a full log
-    log = []
-    10.times { log << Time.now } # 0 delay
+    log = Array.new(10, 100.0) # 0 delay, in monotonic seconds
     @queue.instance_variable_set(:@log, log)
 
     # Expect sleep to be called
@@ -91,6 +90,35 @@ class MessageQueueTest < TestCase
     @queue.send(:wait)
 
     assert_in_delta 1.0, @queue.instance_variable_get(:@slept), 0.1
+  end
+
+  test "rate limiting uses elapsed time without reading the wall clock" do
+    @bot.config.messages_per_second = 1
+    @bot.config.server_queue_size = 2
+    now = 100.0
+    sleeps = []
+    @queue.define_singleton_method(:sleep) { |duration| sleeps << duration }
+
+    with_stub(Time, :now, -> { raise "Unexpected wall clock read" }) do
+      with_stub(Process, :clock_gettime, ->(clock) {
+        assert_equal Process::CLOCK_MONOTONIC, clock
+        now
+      }) do
+        2.times do
+          @queue.queue("PING :foo")
+          @queue.send(:process_one)
+        end
+        @queue.send(:wait)
+        assert_equal [1.0], sleeps
+
+        now += 3.0
+        @queue.queue("PING :bar")
+        @queue.send(:process_one)
+        @queue.send(:wait)
+        assert_equal [1.0], sleeps
+        assert_empty @queue.instance_variable_get(:@log)
+      end
+    end
   end
 
   test "process_one handles IOError" do

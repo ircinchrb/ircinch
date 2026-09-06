@@ -92,10 +92,10 @@ module Cinch
       begin
         to_send = Cinch::Utilities::Encoding.encode_outgoing(message, @bot.config.encoding)
         @socket.write(to_send + "\r\n")
-        @log << Time.now
+        @log << Process.clock_gettime(Process::CLOCK_MONOTONIC)
         @bot.loggers.outgoing(message)
 
-        @time_since_last_send = Time.now
+        @time_since_last_send = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       rescue IOError
         @bot.loggers.error "Could not send message (connectivity problems): #{message}"
       end
