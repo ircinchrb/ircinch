@@ -128,25 +128,25 @@ module Cinch
     # @return [Array<User>] All ops in the channel
     # @since 2.0.0
     def ops
-      @users.select { |user, modes| modes.include?("o") }.keys
+      @users.filter_map { |user, modes| user if modes.include?("o") }
     end
 
     # @return [Array<User>] All half-ops in the channel
     # @since 2.0.0
     def half_ops
-      @users.select { |user, modes| modes.include?("h") }.keys
+      @users.filter_map { |user, modes| user if modes.include?("h") }
     end
 
     # @return [Array<User>] All voiced users in the channel
     # @since 2.0.0
     def voiced
-      @users.select { |user, modes| modes.include?("v") }.keys
+      @users.filter_map { |user, modes| user if modes.include?("v") }
     end
 
     # @return [Array<User>] All admins in the channel
     # @since 2.0.0
     def admins
-      @users.select { |user, modes| modes.include?("a") }.keys
+      @users.filter_map { |user, modes| user if modes.include?("a") }
     end
     # @endgroup
 
