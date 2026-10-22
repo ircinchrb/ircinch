@@ -1,4 +1,4 @@
 # For available configuration options, see:
 #   https://github.com/testdouble/standard
 parallel: true
-ruby_version: 3.2
+ruby_version: 3.3
