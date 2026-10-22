@@ -18,7 +18,7 @@ bot = Cinch::Bot.new do
 
   # Only log channel messages
   on :channel do |m|
-    users[m.user.nick] = Seen.new(m.user.nick, m.channel, m.message, Time.new)
+    users[m.user.nick] = Seen.new(m.user.nick, m.channel, m.message, Time.now)
   end
 
   on :channel, /^!seen (.+)/ do |m, nick|
