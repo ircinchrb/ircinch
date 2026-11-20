@@ -1,5 +1,6 @@
 * Unreleased
-  - Add Ruby 4.1.0-preview1, remove Ruby 3.2 from CI matrix
+  - Add JRuby and Ruby 4.1.0-preview1 to CI matrix
+  - Remove Ruby 3.2 from CI matrix
   - Remove obsolete Float::INFINITY fallback
   - Use monotonic timing for reconnect waits and message throttling
   - Minor performance improvements
