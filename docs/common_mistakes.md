@@ -1,60 +1,69 @@
-# @title Common mistakes
-# @markup kramdown
+# Common Mistakes
 
-# I defined an initialize method in my plugin and now it doesn't work properly anymore
+## I defined an initialize method in my plugin and now it doesn't work properly anymore
 
-Cinch requires plugins to set certain states for them to work
-properly. This is done by the initialize method of the Plugin module.
-If you define your own initializer, make sure to accept an arbitrary
-number of arguments (`*args`) and to call `super` as soon as possible.
+IRCinch passes the bot to the plugin initializer. Call `super` with that
+argument so `Cinch::Plugin` can initialize the instance and register its
+handlers.
 
-## Example
+### Example
 
-    class MyPlugin
-      include Cinch::Plugin
+```ruby
+class MyPlugin
+  include Cinch::Plugin
 
-      def initialize(*args)
-        super
-        my own stuff here
-      end
-    end
+  def initialize(bot)
+    super
+    @seen = {}
+  end
+end
+```
 
+## I am trying to use plugin options, but Ruby says it cannot find the `config` method
 
-# I am trying to use plugin options, but Ruby says it cannot find the `config` method
+`config` belongs to the plugin instance. Class-level declarations run before
+the class is registered with a bot, so `match(config[:pattern])` raises.
+Define a static matcher and check the configured value in the handler, as
+shown in [plugin configuration](plugins.md#configuration).
 
-A common mistake is to try and use plugin options on class level, for example to manipulate matches. This cannot work because the class itself is not connected to any bot. Plugin options only work in instance methods of plugins.
+## My handlers won't run, even though the regular expression matches
 
-The following is not possible:
-
-    class MyPlugin
-      include Cinch::Plugin
-
-      match(config[:pattern])
-      def execute(m)
-        # ...
-      end
-    end
-
-# My handlers won't run, even though the Regexp matches.
-
-Cinch plugins have a default prefix (`/^!/`). This allows for flexible prefixes
+IRCinch plugins have a default prefix (`/^!/`). This allows for flexible prefixes
 across the whole bot. The default prefix can be changed in `Bot#configure`:
 
-    x = Cinch::Bot.new do
-      configure do |c|
-        # ...
-        c.plugins.prefix = /^%/
-      end
-    end
+```ruby
+bot = Cinch::Bot.new do
+  configure do |c|
+    # ...
+    c.plugins.prefix = /^%/
+  end
+end
+```
 
 Alternatively, you can set the prefix for specific plugins only, by calling `set`:
 
-    class MyPlygin
-      include Cinch::Plugin
+```ruby
+class MyPlugin
+  include Cinch::Plugin
 
-      set :prefix, /^%/
-    end
+  set :prefix, /^%/
+end
+```
 
 You can also choose to not use a prefix for specific matchers:
 
-    match /hi/, use_prefix: false
+```ruby
+match /hi/, use_prefix: false
+```
+
+## My bot hasn't joined a channel when `:connect` runs
+
+`:connect` signals IRC registration. The channel joins happen afterward.
+Listen for `:join` and check `m.user == bot` before relying on membership.
+See [`:connect`](events.md#connect) and [`delay_joins`](bot_options.md#delay_joins).
+
+## Setting `c.default_logger_level` didn't change my log output
+
+The default logger already exists when the configuration block runs. Set
+`bot.loggers.first.level = :info` before `bot.start` to change its level.
+See [Logging](logging.md#changing-the-level).

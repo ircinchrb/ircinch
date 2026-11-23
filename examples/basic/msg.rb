@@ -1,14 +1,14 @@
-require "ircinch"
+# frozen_string_literal: true
+
+require_relative "../settings"
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server = "irc.libera.chat"
-    c.nick = "IrCinchBot"
-    c.channels = ["#ircinch-bots"]
+    ExampleSettings.configure(c, "irc_msg")
   end
 
-  on :message, /^!msg (.+?) (.+)/ do |m, who, text|
-    User(who).send text
+  on :message, /\A!msg ([^\s,#&]+) (.+)\z/ do |m, who, text|
+    User(who).safe_send(text) if ExampleSettings.admin?(m)
   end
 end
 

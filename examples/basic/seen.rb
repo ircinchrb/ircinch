@@ -1,36 +1,29 @@
-require "ircinch"
+# frozen_string_literal: true
 
-class Seen < Struct.new(:who, :where, :what, :time)
-  def to_s
-    "[#{time.asctime}] #{who} was seen in #{where} saying #{what}"
-  end
-end
+require_relative "../settings"
+
+last_messages = {}
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server = "irc.libera.chat"
-    c.channels = ["#ircinch-bots"]
+    ExampleSettings.configure(c, "irc_seen")
   end
 
-  def users
-    {}
+  on :message do |m|
+    next unless m.channel && m.user && !m.ctcp? && !m.statusmsg_mode
+
+    nick = m.user.nick
+    key = [m.channel, nick.irc_downcase(bot.irc.isupport["CASEMAPPING"])]
+    entry = "[#{m.time.asctime}] #{nick} said #{m.message}"
+    synchronize(:seen) { last_messages[key] = entry }
   end
 
-  # Only log channel messages
-  on :channel do |m|
-    users[m.user.nick] = Seen.new(m.user.nick, m.channel, m.message, Time.now)
-  end
+  on :message, /\A!seen (\S+)\z/ do |m, nick|
+    next unless m.channel
 
-  on :channel, /^!seen (.+)/ do |m, nick|
-    if nick == bot.nick
-      m.reply "That's me!"
-    elsif nick == m.user.nick
-      m.reply "That's you!"
-    elsif users.key?(nick)
-      m.reply users[nick].to_s
-    else
-      m.reply "I haven't seen #{nick}"
-    end
+    key = [m.channel, nick.irc_downcase(bot.irc.isupport["CASEMAPPING"])]
+    entry = synchronize(:seen) { last_messages[key] }
+    m.safe_reply(entry || "I haven't seen #{nick} in this channel.")
   end
 end
 

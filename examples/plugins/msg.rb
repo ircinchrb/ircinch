@@ -1,19 +1,19 @@
-require "ircinch"
+# frozen_string_literal: true
+
+require_relative "../settings"
 
 class Messenger
   include Cinch::Plugin
 
-  match(/msg (.+?) (.+)/)
+  match(/msg ([^\s,#&]+) (.+)\z/)
   def execute(m, receiver, message)
-    User(receiver).send(message)
+    User(receiver).safe_send(message) if ExampleSettings.admin?(m)
   end
 end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server = "irc.libera.chat"
-    c.nick = "IrCinchBot"
-    c.channels = ["#ircinch-bots"]
+    ExampleSettings.configure(c, "irc_pmsg")
     c.plugins.plugins = [Messenger]
   end
 end

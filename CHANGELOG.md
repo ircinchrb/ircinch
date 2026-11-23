@@ -5,6 +5,7 @@
   - Bump minimum supported Ruby version to 3.3.0
   - Use monotonic timing for reconnect waits and message throttling
   - Minor performance improvements
+  - Refresh documentation and examples
 
 * IRCinch 2.4.5, 7 February 2026
   - Fix issue in which bot does not join channels or set modes after connecting (fix by @snex)

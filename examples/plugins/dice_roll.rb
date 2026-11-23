@@ -1,36 +1,29 @@
-require "ircinch"
+# frozen_string_literal: true
+
+require_relative "../settings"
 
 class DiceRoll
   include Cinch::Plugin
 
-  # [[<repeats>#]<rolls>]d<sides>[<+/-><offset>]
-  match(/roll (?:(?:(\d+)#)?(\d+))?d(\d+)(?:([+-])(\d+))?/)
-  def execute(m, repeats, rolls, sides, offset_op, offset)
-    repeats = repeats.to_i
-    repeats = 1 if repeats < 1
-    rolls = rolls.to_i
-    rolls = 1 if rolls < 1
+  # !roll [[repeats#]rolls]d<sides>[+/-offset]
+  match(/roll (?:(?:(\d+)#)?(\d+))?d(\d+)([+-]\d{1,6})?\z/)
 
-    total = 0
-
-    repeats.times do
-      rolls.times do
-        score = rand(sides.to_i) + 1
-        if offset_op
-          score = score.send(offset_op, offset.to_i)
-        end
-        total += score
-      end
+  def execute(m, repeats, rolls, sides, offset)
+    count = (repeats || "1").to_i * (rolls || "1").to_i
+    sides = sides.to_i
+    unless count.between?(1, 100) && sides.between?(1, 10_000)
+      m.reply "Use 1–100 dice with 1–10,000 sides."
+      return
     end
 
+    total = count.times.sum { rand(1..sides) + offset.to_i }
     m.reply "Your dice roll was: #{total}", true
   end
 end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server = "irc.libera.chat"
-    c.channels = ["#ircinch-bots"]
+    ExampleSettings.configure(c, "irc_dice")
     c.plugins.plugins = [DiceRoll]
   end
 end

@@ -1,33 +1,29 @@
-require "cgi"
-require "ircinch"
-require "open-uri"
+# frozen_string_literal: true
 
-class TinyURL
+require_relative "../settings"
+require_relative "../tiny_url"
+
+class URLShortener
   include Cinch::Plugin
 
-  listen_to :channel
+  set :required_options, [:token]
+  match(/shorten (\S+)\z/)
 
-  def shorten(url)
-    url = URI.parse("http://tinyurl.com/api-create.php?url=#{CGI.escape(url)}").open
-    (url == "Error") ? nil : url
-  rescue OpenURI::HTTPError
-    nil
+  def initialize(bot)
+    super
+    @shortener = TinyURLClient.new(config.fetch(:token))
   end
 
-  def listen(m)
-    urls = URI.extract(m.message, "http")
-    short_urls = urls.map { |url| shorten(url) }.compact
-    unless short_urls.empty?
-      m.reply short_urls.join(", ")
-    end
+  def execute(m, url)
+    m.safe_reply(@shortener.shorten(url))
   end
 end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server = "irc.libera.chat"
-    c.channels = ["#ircinch-bots"]
-    c.plugins.plugins = [TinyURL]
+    ExampleSettings.configure(c, "irc_purl")
+    c.plugins.plugins = [URLShortener]
+    c.plugins.options[URLShortener] = {token: ENV.fetch("TINYURL_TOKEN")}
   end
 end
 

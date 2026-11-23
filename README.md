@@ -10,39 +10,43 @@ profits flourish.
 IRCinch will do all of the hard work for you, so you can spend time creating
 cool plugins and extensions to wow your internet peers.
 
-IRCinch a fork of the brilliant [Cinch](https://github.com/cinchrb/cinch)
+IRCinch is a fork of the brilliant [Cinch](https://github.com/cinchrb/cinch)
 project by Dominik Honnef, Lee Jarvis, and contributors. The IRCinch fork
-focuses on compatibility with supported versions of CRuby.
+focuses on compatibility with supported versions of Ruby, and keeps the Ruby
+API under the `Cinch` namespace for drop-in compatibility.
 
 ## Installation
+
+This checkout requires Ruby 3.3 or newer. The
+[CI matrix](.github/workflows/ci.yml) includes CRuby, JRuby, and TruffleRuby.
 
 ### RubyGems
 
 You can install the latest IRCinch gem using RubyGems:
 
-```
+```sh
 gem install ircinch
 ```
 
 ### Bundler
-Or, you can install the latest IRCinch gem using Bundler:
 
-```
+In an existing Bundler project, add IRCinch with:
+
+```sh
 bundle add ircinch
-bundle install
 ```
 
 ### GitHub
 
-You can also check out the latest code directly from Github:
+You can also check out the latest code directly from GitHub:
 
-```
+```sh
 git clone https://github.com/ircinchrb/ircinch.git
 ```
 
 ## Example
 
-Your typical Hello, World application in Cinch would go something like this:
+Your typical "Hello, World" application in Cinch would go something like this:
 
 ```ruby
 require "ircinch"
@@ -50,6 +54,7 @@ require "ircinch"
 bot = Cinch::Bot.new do
   configure do |c|
     c.server = "irc.libera.chat"
+    c.nick = "my_example_bot"
     c.channels = ["#ircinch-bots"]
   end
 
@@ -61,14 +66,19 @@ end
 bot.start
 ```
 
-More examples can be found in the `examples` directory.
+See [Getting Started](docs/getting_started.md) for setup and how to run the
+example. The [example bots](examples/README.md) include complete scripts
+and commands to try.
 
 ## Features
 
 ### Documentation
 
-IRCinch provides a documented API, which is online for your viewing pleasure at
-[https://rubydoc.info/gems/ircinch](https://rubydoc.info/gems/ircinch).
+See the [IRCinch guides](docs/readme.md) for setup, bot options, plugins, and
+events.
+
+For API details, see the [source reference](lib/cinch) or the gem's
+[RubyDoc.info page](https://rubydoc.info/gems/ircinch).
 
 ### Object Oriented
 
@@ -87,11 +97,10 @@ making your code simple and easy to comprehend.
 Unlike a lot of popular IRC frameworks, IRCinch is threaded. But wait, don't
 let that scare you. It's totally easy to grasp.
 
-Each of IRCinch's plugins and handlers are executed in their own personal
-thread. This means the main thread can stay focused on what it does best,
-providing non-blocking reading and writing to an IRC server. This will prevent
-your bot from locking up when one of your plugins starts doing some intense
-operations. Damn that's handy.
+IRCinch runs each handler invocation in its own thread and uses separate
+threads for reading and writing IRC traffic. A plugin instance can handle
+several events concurrently. Use [`synchronize`](docs/plugins.md#shared-state)
+when handlers share mutable state.
 
 ### Plugins
 
@@ -122,6 +131,7 @@ end
 bot = Cinch::Bot.new do
   configure do |c|
     c.server = "irc.libera.chat"
+    c.nick = "my_example_bot"
     c.channels = ["#cinch-bots"]
     c.plugins.plugins = [Hello]
   end
@@ -133,7 +143,8 @@ bot.start
 Note: Plugins take a default prefix of `/^!/` which means the actual match is
 `!hello`.
 
-More information can be found in the {Cinch::Plugin} documentation.
+See the [plugin guide](docs/plugins.md) for matchers, listeners, and
+configuration.
 
 ### Numeric Replies
 
@@ -141,16 +152,15 @@ Do you know what IRC code 401 represents? How about 376? or perhaps 502?
 Sure you don't (and if you do, you're as geeky as us!). IRCinch doesn't expect
 you to store the entire IRC RFC code set in your head, and rightfully so!
 
-That's exactly why IRCinch has a ton of constants representing these numbers
-so you don't have to remember them. We're so nice.
+Use the named [constants](lib/cinch/constants.rb) in `Cinch::Constants`
+or pass the numeric code directly to [`on` or `listen_to`](docs/events.md).
 
 ### Pretty Output
 
 Ever get fed up of watching those boring, frankly unreadable lines flicker
 down your terminal screen whilst your bot is online? Help is at hand! By
-default, IRCinch will colorize all text it sends to a terminal, meaning you
-get some pretty damn awesome readable coloured text. IRCinch also provides a
-way for your plugins to log custom messages:
+default, IRCinch uses a formatted logger that adds color when writing to a
+terminal. Your plugins and handlers can also log custom messages:
 
 ```ruby
 on :message, /hello/ do |m|
@@ -158,20 +168,19 @@ on :message, /hello/ do |m|
 end
 ```
 
+See [Logging](docs/logging.md) for levels, output, and filters.
+
 ## Code of Conduct
 
 Everyone interacting in the IRCinch project's codebases, issue trackers, chat
-rooms, and mailing lists is expected to follow the 
-[code of conduct](https://github.com/ircinchrb/ircinch/blob/main/CODE_OF_CONDUCT.md).
+rooms, and mailing lists is expected to follow the
+[code of conduct](CODE_OF_CONDUCT.md).
 
 ## Contribute
 
 Love IRCinch? Love Ruby? Love helping? Of course you do! If you feel like
 IRCinch is missing that awesome jaw-dropping feature and you want to be the
 one to make this magic happen, you can!
-
-Please note that we intend for IRCinch to be fully compatible with all
-supported CRuby versions.
 
 Fork the project, implement your awesome feature in its own branch, and send
 a pull request to one of the IRCinch collaborators. We'll be more than happy
@@ -180,8 +189,8 @@ to check it out.
 ### Development
 
 After forking/checking out the repo, run `bin/setup` to install dependencies.
-Then, run `rake test` to run the tests. You can also run `bin/console` for an
-interactive prompt that will allow you to experiment.
+Then, run `bundle exec rake test` to run the tests. You can also run
+`bin/console` for an interactive prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`.
 To release a new version, update the version number in `lib/cinch/version.rb`,

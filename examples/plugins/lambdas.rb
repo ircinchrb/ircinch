@@ -1,4 +1,6 @@
-require "ircinch"
+# frozen_string_literal: true
+
+require_relative "../settings"
 
 class DirectAddressing
   include Cinch::Plugin
@@ -18,16 +20,13 @@ class DirectAddressing
 
   match "rename", method: :rename
   def rename(m)
-    @bot.nick += "_"
+    bot.nick += "_" if ExampleSettings.admin?(m)
   end
 end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.nick = "ircinch_lambda"
-    c.server = "irc.libera.chat"
-    c.channels = ["#ircinch-bots"]
-    c.verbose = true
+    ExampleSettings.configure(c, "irc_addr")
     c.plugins.plugins = [DirectAddressing]
   end
 end

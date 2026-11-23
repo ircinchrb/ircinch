@@ -1,4 +1,6 @@
-require "cinch"
+# frozen_string_literal: true
+
+require_relative "../settings"
 
 class HooksDemo
   include Cinch::Plugin
@@ -7,7 +9,7 @@ class HooksDemo
   def generate_random_number(m)
     # Hooks are called in the same thread as the handler and thus
     # using thread local variables is possible.
-    Thread.current[:rand] = Kernel.rand
+    Thread.current[:rand] = rand
   end
 
   hook :post, method: :cheer
@@ -23,10 +25,7 @@ end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.nick = "ircinch_hooks"
-    c.server = "irc.libera.chat"
-    c.channels = ["#ircinch-bots"]
-    c.verbose = true
+    ExampleSettings.configure(c, "irc_hooks")
     c.plugins.plugins = [HooksDemo]
   end
 end

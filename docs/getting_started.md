@@ -1,14 +1,17 @@
-# @title Getting Started
-# @markup kramdown
-
 # Getting Started
 
-This short guide will show you how to easily and quickly write your
-own IRC bot with Cinch.
+This guide builds an IRC bot with IRCinch. Install it with `gem install ircinch`
+or `bundle add ircinch` in an existing Bundler project. The gem loads with
+`require "ircinch"` and exposes the Ruby API under `Cinch`.
 
-# What Cinch really is
+Choose an IRC server, a unique nickname, and a channel where you can test.
+The examples use the default plain-text port, `6667`, without credentials.
+See the [Libera.Chat connection guide](https://libera.chat/guides/connect)
+and the [bot's TLS and account settings](bot_options.md#ssl) for other setups.
 
-First and foremost, it is important to understand that Cinch is more
+## What IRCinch really is
+
+First and foremost, it is important to understand that IRCinch is more
 of an API for IRC access than a full-blown bot framework like Autumn
 or Rbot.
 
@@ -16,169 +19,161 @@ There will be no enforced directory structures, no magical places from
 which plugins will be loaded and no obscure, "fancy" names. Plugins
 will be plugins and not "leaves".
 
-This, however, does not mean that Cinch requires you to be familiar
+This, however, does not mean that IRCinch requires you to be familiar
 with the internals of the IRC protocol. Quite the opposite: A very
 high-level abstraction is provided, allowing things such as
 
-    Channel("#cinch").users.each do |user, modes|
-      user.send "I am watching you!"
-    end
+```ruby
+Channel("#ircinch").users.each do |user, modes|
+  user.send "I am watching you!"
+end
+```
 
 to work.
-
 
 Furthermore, the API has been designed in a way that it sticks true to
 the way Ruby looks and behaves. Plugins are normal classes that mix-in
 a module, functions of the bot are implemented as normal methods and
 so on.
 
-# Hello, World
+## Hello, World
 
 The following will describe one of the most basic IRC bots you can
-write in Cinch: One that joins a specific channel and responds to
+write in IRCinch: One that joins a specific channel and responds to
 "hello" by saying "Hello, World".
 
+```ruby
+require "ircinch"
 
-    require "cinch"
+bot = Cinch::Bot.new do
+  configure do |c|
+    c.server = "irc.libera.chat"
+    c.nick = "my_example_bot"
+    c.channels = ["#ircinch-bots"]
+  end
 
-    bot = Cinch::Bot.new do
-      configure do |c|
-        c.server   = "irc.freenode.net"
-        c.channels = ["#cinch-bots"]
-      end
+  on :message, "hello" do |m|
+    m.reply "Hello, World"
+  end
+end
 
-      on :message, "hello" do |m|
-        m.reply "Hello, World"
-      end
-    end
+bot.start
+```
 
-    bot.start
+Save the example as `bot.rb`, replace the nickname and channel as needed,
+and run `ruby bot.rb` (or `bundle exec ruby bot.rb` with Bundler). After the
+bot joins, send `hello` from another IRC client in that channel. The bot
+starts its connection loop at `bot.start`. Use Ctrl-C to stop the process.
 
+### In Detail
 
-Note that this is the entire file and all you need for the basic bot
-to work. Save the above example to a file and run it with Ruby.
-
-## In Detail
-
-So, what are we actually doing in that short piece of code? First, we
-create a new bot in line 3 and conigure it in lines 4–6 –
-{Cinch::Bot#configure configure} simply yields the configuration
-object, which allows you to configure various things. In this example,
-we only set which server to connect to and which channel to join.
+First, we create a bot. The [`configure`](../lib/cinch/bot.rb) method yields
+the configuration object. In this example, we set which server to connect
+to and which channel to join.
 Another often-used option is the nickname of the bot
-({file:docs/bot_options.md#nick c.nick}). For an overview of all
-available options, see {file:docs/bot_options.md the list of options}.
+([`c.nick`](bot_options.md#nick)). For an overview of all
+available options, see [the list of options](bot_options.md).
 
 Following, we define a basic message handler. In its simplest form,
-{Cinch::Bot#on on} expects two arguments: The kind of message to react
+[`on`](../lib/cinch/bot.rb) expects two arguments: The kind of message to react
 to and the pattern to match. In this case, the kind is
-{file:docs/events.md#message :message}, which means that the bot will
+[`:message`](events.md#message), which means that the bot will
 respond to both messages in channels as well as messages sent directly
 to the bot. For a list of all kinds, called events, see
-{file:docs/events.md the list of events}.
+[the list of events](events.md).
 
-For the pattern we use a basic string, which means that the message
-has to be exactly that string. It mustn't have anything before or
-after the word "hello". Another way of using {Cinch::Bot#on on} is by using
-regular expressions:
+The string `"hello"` matches the entire message. Use a regular expression
+when you need to match a pattern or extract part of the message:
 
-    on :message, /^\d{4}$/ do |m|
-      # ...
-    end
+```ruby
+on :message, /\Ayear (\d{4})\z/ do |m, year|
+  m.reply "You entered #{year}"
+end
+```
 
-will match all messages that consist of exactly four digits and
-nothing else.
-
-Whenever a message matches the handler we just defined, the block we
-provided will be called, with the message object, and optionally
-capture groups of the regular expression, passed to it.
+For `year 2026`, the handler receives the message and the captured string
+`"2026"` as separate arguments.
 
 The message object allows insight into the nature of the message, i.e.
 who sent it, when was it sent etc, and also provides the
-{Cinch::Message#reply reply} method, an easy way of responding to a
-message. If the message was sent to a channel, {Cinch::Message#reply
-reply} will respond to the channel, otherwise directly to the user.
+[`reply`](../lib/cinch/message.rb) method. It responds in the channel for
+channel messages and directly to the user for private messages.
 
-We then use exactly that {Cinch::Message#reply reply} method to send back "Hello, World"
-whenever someone says "hello".
+We use `reply` to send back "Hello, World" whenever someone says "hello".
 
 That's it!
 
-# on-handlers vs. plugins
+## on-handlers vs. plugins
 
 Using `on` might be nice and handy for writing simple bots, but if you
 want to write a more complex bot, providing lots of different features
 to its users, then using plugins might be a better solution.
 
 But what are plugins, exactly? Technically, plugins are implemented as
-Ruby classes that mix-in a {Cinch::Plugin specific module} to get
+Ruby classes that mix-in a [specific module](../lib/cinch/plugin.rb) to get
 access to various methods.
 
 To have an example to work with, we'll convert our "Hello, World" bot
 to using the plugin API:
 
-    require "cinch"
+```ruby
+require "ircinch"
 
-    class HelloWorld
-      include Cinch::Plugin
+class HelloWorld
+  include Cinch::Plugin
 
-      match "hello"
-      def execute(m)
-        m.reply "Hello, World"
-      end
-    end
+  match "hello"
+  def execute(m)
+    m.reply "Hello, World"
+  end
+end
 
-    bot = Cinch::Bot.new do
-      configure do |c|
-        c.server = "irc.freenode.net"
-        c.channels = ["#cinch-bots"]
-        c.plugins.plugins = [HelloWorld]
-      end
-    end
+bot = Cinch::Bot.new do
+  configure do |c|
+    c.server = "irc.libera.chat"
+    c.nick = "my_example_bot"
+    c.channels = ["#ircinch-bots"]
+    c.plugins.plugins = [HelloWorld]
+  end
+end
 
-    bot.start
+bot.start
+```
 
-The first thing to notice is that we wrote a new class called
-`HelloWorld`, and that we use {Cinch::Plugin::ClassMethods#match
-match} instead of `on` to define our handler. Furthermore, we didn't
-specify a message type nor did we provide any blocks.
+The `HelloWorld` class defines its handler with [`match`](../lib/cinch/plugin.rb).
 
 But let's back up and proceed in smaller steps to see how plugins are built.
 
-First thing after defining a new class is to include {Cinch::Plugin} –
-This module will provide methods like
-{Cinch::Plugin::ClassMethods#match match} and also allows Cinch to
-control the class in specific ways required for plugins to work.
+Including [`Cinch::Plugin`](../lib/cinch/plugin.rb) gives the class methods
+like `match` and lets Cinch manage it as a plugin.
 
 Then we use aforementioned `match`, instead of `on`, to specify what
 messages we want to react to. We didn't have to specify the message
-type because plugins default to {file:docs/events.md#message :message}.
+type because plugins default to [`:message`](events.md#message).
 
 We then define a method called `execute`, which is pretty much the
 same as blocks are to on-handlers. And from here on, everything is the
 same.
 
-The only thing left to do is to tell Cinch to use our plugin, by
-adding it to {file:docs/bot_options.md#pluginsplugins c.plugins.plugins}.
+The only thing left to do is to tell IRCinch to use our plugin, by
+adding it to [`c.plugins.plugins`](bot_options.md#pluginsplugins).
 
 One important thing remains to note: Plugins have a
-{file:docs/bot_options.md#pluginsprefix prefix}, a string (or pattern)
-that gets appended to all patterns you define, and by default this
-prefix is `/^!/`. This means that in order to invoke our HelloWorld
-plugin, a user has to say "!hello" instead of "hello". This prefix can
-be configured on a per-plugin or global basis, but that's not in the
-scope of this document.
+[`prefix`](bot_options.md#pluginsprefix), a string (or pattern)
+that gets prepended to all patterns you define, and by default this
+prefix is `/^!/`. Send `!hello` to invoke the plugin. The [plugin guide](plugins.md#matching-messages)
+shows how to change the prefix for a bot, plugin, or matcher.
 
-# Final Words
+## Final Words
 
-This short guide only explains the basics of using Cinch, so that you
+This short guide only explains the basics of using IRCinch, so that you
 can get started as quickly as possible. For more advanced topics, you
 will want to read the specific documents:
 
-- {file:docs/plugins.md Plugins}
-- {file:docs/bot_options.md A list of all available bot options}
-- {file:docs/events.md A list of all available events}
-- {file:docs/encodings.md Dealing with encodings}
-- {file:docs/logging.md Logging in Cinch}
-- {file:docs/common_tasks.md A cookbook for common tasks}
-- {file:docs/common_mistakes.md A list of common mistakes and how to avoid them}
+- [Plugins](plugins.md)
+- [A list of all available bot options](bot_options.md)
+- [A list of all available events](events.md)
+- [Dealing with encodings](encodings.md)
+- [Logging in IRCinch](logging.md)
+- [A cookbook for common tasks](common_tasks.md)
+- [A list of common mistakes and how to avoid them](common_mistakes.md)

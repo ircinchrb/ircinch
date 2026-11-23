@@ -1,7 +1,7 @@
-# @title Events
-# @markup kramdown
+# Events
 
-Cinch provides three kinds of events:
+Register handlers with `on` on a bot or `listen_to` in a [plugin](plugins.md).
+Each incoming IRC message can dispatch several events. IRCinch provides three kinds:
 
 1. Events mapping directly to IRC commands
 
@@ -10,152 +10,145 @@ Cinch provides three kinds of events:
 
 2. Events mapping directly to IRC numeric codes
 
-   For example `:"401"` for `ERR_NOSUCHNICK`, which is triggered when
-   trying to operate on an unknown nickname, or `:"318"` for
-   `RPL_ENDOFWHOIS`, which is triggered after whois information have
-   been received.
+   For example `:"401"` (`ERR_NOSUCHNICK`) and `:"318"` (`RPL_ENDOFWHOIS`).
+   Both `on` and `listen_to` also accept the numeric code as a string or integer.
+   See the [numeric constants](../lib/cinch/constants.rb).
 
 3. Events mapping to more abstract ideas
 
    For example `:leaving` whenever a user parts, quits or gets
-   kicked/killed or `:message`, which is actually a synonym for
-   `:privmsg`, the underlying IRC command.
+   kicked or killed, and `:message` for incoming `PRIVMSG` commands.
 
-# Events of the first two kinds
+## Events of the first two kinds
 
-All events of the first two kinds behave exactly the same: When they
-get triggered, the handler will be passed a single object, a reference
-to the {Cinch::Message Message object}.
+The first handler argument is the [message object](../lib/cinch/message.rb).
+With `on`, any extra arguments passed at registration come next, followed
+by regular expression captures. Event-specific arguments follow the captures.
 
 Example:
 
-    on :topic do |m|
-      # m is the message object
-    end
+```ruby
+on :topic do |m|
+  info "Topic changed in #{m.channel}"
+end
 
-We will not further describe all possible events of the first two
-categories.
+on 401 do |m|
+  warn "Unknown nickname: #{m.params[1]}"
+end
+```
 
-# Events of the third kind
+## Events of the third kind
 
-Events of the third kind can each have different signatures, as they
-get passed objects directly relating to their kind, for example the
-leaving user in case of `:leaving`. This document will describe all
-events of that kind, their signature and example usage.
+These events may add arguments, such as the user who left for `:leaving`.
+For `:disconnect`, `:online`, and `:offline`, the first argument is `nil`.
 
-**Note: Because *all* handlers receive a {Cinch::Message Message}
-  object as the first argument, we will only mention and describe
-  additional arguments.**
-
-## `:action`
+### `:action`
 
 The `:action` event is triggered when a user sends a CTCP ACTION to a
-channel or the bot. CTCP ACTION is commonly refered to simply as
-"actions" or "/me's", because that is the command used in most IRC
-clients.
+channel or the bot, usually via `/me` in an IRC client. The `on` pattern
+matches the action text, available as `m.action_message`.
 
 Example:
 
-    on :action, "kicks the bot" do |m|
-      m.reply "Ouch! Stop kicking me :(", true
-    end
+```ruby
+on :action, "kicks the bot" do |m|
+  m.reply "Ouch! Stop kicking me :(", true
+end
+```
 
-
-## `:away`
+### `:away`
 
 The `:away` event is triggered when a user goes away. This feature
 only works on networks implementing the "away-notify" extension.
 
 Example:
 
-    on :away do |m|
-      debug("User %s just went away: %s" % [m.user, m.message])
-    end
+```ruby
+on :away do |m|
+  debug("User %s just went away: %s" % [m.user, m.message])
+end
+```
 
-See also {file:docs/events.md#unaway the `:unaway` event}.
+See also [the `:unaway` event](#unaway).
 
-
-## `:ban`
+### `:ban`
 
 The `:ban` event is triggered when a user gets banned in a channel.
 
-One additional argument, a {Cinch::Ban Ban object}, gets passed to
+One additional argument, a [Ban object](../lib/cinch/ban.rb), gets passed to
 the handler.
 
 Example:
 
-    on :ban do |m, ban|
-      debug("%s just banned %s" % [ban.by, ban.mask])
-    end
+```ruby
+on :ban do |m, ban|
+  debug("%s just banned %s" % [ban.by, ban.mask])
+end
+```
 
-See also {file:docs/events.md#unban the `:unban` event}.
+See also [the `:unban` event](#unban).
 
-
-## `:catchall`
+### `:catchall`
 
 `:catchall` is a special event that gets triggered for every incoming
 IRC message/command, no matter what the type is.
 
+### `:channel`
 
-## `:channel`
+The `:channel` event is triggered for `PRIVMSG` and `NOTICE` sent to a
+channel, including messages addressed to a subset of users via `STATUSMSG`.
 
-The `:channel` event is triggered for channel messages (the usual
-form of communication on IRC).
+See also [the `:private` event](#private).
 
-See also {file:docs/events.md#private the `:private` event}.
+### `:connect`
 
+The `:connect` event is dispatched during successful IRC registration,
+before channel membership is guaranteed. It can be dispatched more than
+once on a connection as the remaining registration numerics arrive. Use
+`:join` and check `m.user == bot` for work that requires the bot to be in a
+channel.
 
-## `:connect`
+### `:ctcp`
 
-The `:connect` event is triggered after the bot successfully
-connected to the IRC server.
+The `:ctcp` event is triggered for CTCP payloads in `PRIVMSG` or `NOTICE`,
+such as a `VERSION` request. Access the command and arguments through
+`m.ctcp_command` and `m.ctcp_args`.
 
-One common use case for this event is setting up variables,
-synchronising information etc.
-
-
-## `:ctcp`
-
-The `:ctcp` event is triggered when receiving CTCP-related messages,
-for example the VERSION request.
-
-
-## `:dcc_send`
+### `:dcc_send`
 
 `:dcc_send` gets triggered when a user tries to send a file to the
 bot, using the DCC SEND protocol.
 
-One additional argument, a {Cinch::DCC::Incoming::Send DCC::Send
-object}, gets passed to the handler.
+The second argument is a [`Cinch::DCC::Incoming::Send`](../lib/cinch/dcc/incoming/send.rb)
+offer. See [DCC file transfers](common_tasks.md#dcc-file-transfers).
 
-For example usage and a general explanation of DCC in Cinch check
-{Cinch::DCC::Incoming::Send}.
+### `:disconnect`
 
+Fires after the IRC socket closes at the end of the read loop. The message
+argument is `nil`. An initial TCP connection failure does not emit this event.
 
-## `:dehalfop`, `:deop`, `:deowner`, `:devoice`
+### `:dehalfop`, `:deop`, `:deowner`, `:devoice`
 
 These events get triggered for the respective channel operations of
 taking halfop, op, owner and voice from a user.
 
-One additional argument, the user whose rights are being modifed, gets
+One additional argument, the user whose rights are being modified, gets
 passed to the handler.
 
+### `:error`
 
-## `:error`
+`:error` is dispatched for numeric replies in the `400`–`599` range.
+`m.error` contains the numeric code as an integer. The IRC `ERROR` command
+also dispatches `:error` through its command name.
 
-`:error` gets triggered for all numeric replies that signify errors
-(`ERR_*`).
-
-
-## `:halfop`
+### `:halfop`
 
 This event gets triggered when a user in a channel gets half-opped.
 
 One additional argument, the user being half-opped, gets passed to the
 handler.
 
-
-## `:leaving`
+### `:leaving`
 
 `:leaving` is an event that is triggered whenever any of the following
 are triggered as well: `:part`, `:quit`, `:kick`, `:kill`.
@@ -166,60 +159,54 @@ or the network, no matter the reason.
 One additional argument, the leaving user, gets passed to the handler.
 
 Be careful not to confuse the additional argument with
-{Cinch::Message#user}. For example in the case of a kick,
-{Cinch::Message#user} will describe the user kicking someone, not the
+[`Cinch::Message#user`](../lib/cinch/message.rb). For example in the case of a kick,
+[`Cinch::Message#user`](../lib/cinch/message.rb) will describe the user kicking someone, not the
 one who is being kicked.
 
 Example:
 
-    on :leaving do |m, user|
-      if m.channel?
-        debug("%s just left %s." % [user, m.channel])
-      else
-        debug("%s just left the network." % user)
-      end
-    end
+```ruby
+on :leaving do |m, user|
+  if m.channel?
+    debug("%s just left %s." % [user, m.channel])
+  else
+    debug("%s just left the network." % user)
+  end
+end
+```
 
+### `:mode_change`
 
+Fires for channel `MODE` changes. The second argument is an array of
+`[direction, mode, parameter]` triples. `direction` is `:add` or `:remove`,
+`mode` is a one-letter string, and `parameter` is a string or `nil`.
+Use `:mode` to observe raw `MODE` messages, including changes to the bot's
+own user modes.
 
-## `:mode_change`
-
-This event gets triggered whenever modes in a channel or on the bot
-directly change. Unlike events like `:op`, this event is more
-low-level, as the argument the handler gets passed is an array
-describing every change.
-
-
-## `:offline`
+### `:offline`
 
 This event is triggered when a
-{file:docs/common_tasks.md#checking-if-a-user-is-online monitored user}
+[monitored user](common_tasks.md#checking-if-a-user-is-online)
 goes offline.
 
-One additional argument, the user going offline, gets passed to the
-handler.
+The handler receives `nil` followed by the monitored user.
 
-
-## `:online`
+### `:online`
 
 This event is triggered when a
-{file:docs/common_tasks.md#checking-if-a-user-is-online monitored user}
+[monitored user](common_tasks.md#checking-if-a-user-is-online)
 comes online.
 
-One additional argument, the user coming online, gets passed to the
-handler.
+The handler receives `nil` followed by the monitored user.
 
-
-## `:op`
+### `:op`
 
 This event gets triggered when a user in a channel gets opped.
 
 One additional argument, the user being opped, gets passed to the
 handler.
 
-
-## `:owner`
-
+### `:owner`
 
 This event gets triggered when a user in a channel receives
 owner-status.
@@ -227,22 +214,19 @@ owner-status.
 One additional argument, the user receiving owner-status, gets passed
 to the handler.
 
+### `:message`
 
-## `:message`
+The `:message` and `:privmsg` events both fire for an incoming `PRIVMSG` to
+a channel or directly to the bot, including CTCP requests carried in `PRIVMSG`.
 
-The `:message` event is triggered for messages directed at either a
-channel or directly at the bot. It's synonymous with `:privmsg`.
+### `:private`
 
+The `:private` event is triggered for `PRIVMSG` and `NOTICE` directed to
+the bot outside a channel.
 
-## `:private`
+See also [the `:channel` event](#channel).
 
-The `:private` event is triggered for messages directly towarded at
-the bot (think /query in traditional IRC clients).
-
-See also {file:docs/events.md#channel the `:channel` event}.
-
-
-## `:unaway`
+### `:unaway`
 
 The `:unaway` event is triggered when a user no longer is away. This
 feature only works on networks implementing the "away-notify"
@@ -250,24 +234,32 @@ extension.
 
 Example:
 
-    on :unaway do |m|
-      debug("User %s no longer is away." % m.user)
-    end
+```ruby
+on :unaway do |m|
+  debug("User %s no longer is away." % m.user)
+end
+```
 
-See also {file:docs/events.md#away the `:away` event}.
+See also [the `:away` event](#away).
 
-
-## `:unban`
+### `:unban`
 
 The `:unban` event is triggered when a user gets unbanned in a
 channel.
 
-One additional argument, a {Cinch::Ban Ban object}, gets passed to the
+One additional argument, a [Ban object](../lib/cinch/ban.rb), gets passed to the
 handler.
 
+### `:voice`
 
-## `:voice`
 This event gets triggered when a user in a channel gets voiced.
 
 One additional argument, the user being voiced, gets passed to the
 handler.
+
+## Custom events
+
+Call `bot.handlers.dispatch(:event_name, message, *args)` to notify handlers
+registered for your own event. Pass `nil` when there is no originating IRC
+message and use a [listener](plugins.md#listening-to-events) to receive it.
+The public dispatcher returns the threads started for the handlers.

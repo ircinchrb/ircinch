@@ -1,454 +1,347 @@
-# @title Bot options
-# @markup kramdown
+# Bot Options
 
-# Options
+Set options inside `bot.configure { |c| ... }`. Options below show the
+defaults for this checkout. See the [configuration source](../lib/cinch/configuration/bot.rb)
+and the [getting-started guide](getting_started.md) for a complete bot example.
 
-## channels
-Type
-: Array<String>
+## `channels`
 
-Default value
-: `[]`
+- **Type** `Array<String>`
+- **Default** `[]`
 
-Description
-: Channels in this list will be joined upon connecting.
+The bot joins these channels after registration, subject to [`delay_joins`](#delay_joins).
 
+**Notes**
 
-### Notes
-- To automatically join password-protected channels, just append the
-  password to the channel's name, separated by a space, e.g.
-  `"#mychannel mypassword"`.
+- To join a keyed channel from a handler, call `bot.join(channel_name, key)`.
+  Keep channel keys outside the source file.
 
-## dcc
+## `dcc`
 
-### dcc.own_ip
-Type
-: String
+### `dcc.own_ip`
 
-Default value
-: `nil`
+- **Type** `String`
+- **Default** `nil`
 
-Description
-: The external IP which should be used for outgoing DCC SENDs. For
-more information see {Cinch::DCC::Outgoing::Send}.
+The IP address advertised for outgoing DCC transfers. With `nil`, IRCinch
+uses the local address of the IRC socket. The recipient needs to be able to
+reach the advertised address and listening port. See [DCC file transfers](common_tasks.md#dcc-file-transfers).
 
-## delay_joins
-Type
-: Number, Symbol
+## `default_logger_level`
 
-Default value
-: `0`
+- **Type** `Symbol`
+- **Default** `:debug`
 
-Description
-: Delay joining channels N seconds after connecting, or until the event S fires.
+The initial level used when the bot constructs its default logger. That logger
+is created before the bot's configuration block runs. Set `bot.loggers.first.level`
+to change it on an existing bot. See [logger levels](logging.md#logger-levels).
 
-### Notes
-- This is especially useful in combination with the /cinch-identify/ plugin, which will trigger the `:identified` event.
+## `delay_joins`
 
-## encoding
-Type
-: String, Encoding
+- **Type** `Numeric`, `Symbol`
+- **Default** `0`
 
-Default value
-: `:irc`
+With a number, wait that many seconds after IRC registration before joining
+configured channels. With a symbol, join when that event first fires on the
+connection.
 
-Description
-: This determines which encoding text received from IRC will have.
+## `encoding`
 
+- **Type** `String`, `Encoding`, or `:irc`
+- **Default** `:irc`
 
-### Notes
-- {file:docs/encodings.md More information on how Cinch handles encoding issues}
+Controls decoding of incoming text and encoding of outgoing text. See [Encodings](encodings.md).
 
-## local_host
-Type
-: String
+## `local_host`
 
-Default value
-: `nil`
+- **Type** `String`
+- **Default** `nil`
 
-Description
-: Which IP/host to bind to when connecting. This is useful for using
-  so called "vhosts".
+The local address or hostname to bind when opening the IRC connection.
 
-## max_messages
-Type
-: Fixnum
+## `max_messages`
 
-Default value
-: `nil`
+- **Type** `Integer`
+- **Default** `nil`
 
-Description
-: When an overlong message gets split, only `max_messages` parts will
-  be sent to the recipient.
+Maximum number of parts sent per input line. `nil` sends all parts.
 
+## `max_reconnect_delay`
 
-### Notes
-- Set this option to `nil` to disable any limit.
+- **Type** `Integer`
+- **Default** `300`
 
-## max_reconnect_delay
-Type
-: Fixnum
+Maximum reconnect delay in seconds. After an unsuccessful connection attempt,
+IRCinch doubles the wait up to this cap. A successful registration resets the
+backoff.
 
-Default value
-: `300`
+## `messages_per_second`
 
-Descriptipn
-: With every unsuccessful reconnection attempt, Cinch increases the
-  delay between new attempts. This setting is the maximum number of
-  seconds to wait between two attempts.
+- **Type** Positive `Numeric`
+- **Default** `nil`
 
-## messages_per_second
-Type
-: Float
+Estimated rate at which the server processes messages sent by the bot. `nil`
+uses the [network default](../lib/cinch/network.rb). This estimate controls
+outgoing throttling together with [`server_queue_size`](#server_queue_size).
 
-Default value
-: Network dependent
+**Notes**
 
-Description
-: How many incoming messages the server processes per second. This is
-  used for throttling.
-
-
-### Notes
 - If your bot gets kicked for excess flood, try lowering the value of
   `messages_per_second`.
-- See also: {file:docs/bot_options.md#serverqueuesize `server_queue_size`}
+- See also: [`server_queue_size`](#server_queue_size)
 
-## message_split_end
-Type
-: String
+## `message_split_end`
 
-Default value
-: `" ..."`
+- **Type** `String`
+- **Default** `" ..."`
 
-Description
-: When a message is too long to be sent as a whole, it will be split
-  and the value of this option will be appended to all but the last
-  parts of the message.
+When a message is too long to be sent as a whole, it will be split
+and the value of this option will be appended to all but the last
+part. Use `nil` or `""` to omit the marker.
 
+## `message_split_start`
 
-## message_split_start
-Type
-: String
+- **Type** `String`
+- **Default** `"... "`
 
-Default value
-: `"... "`
+When a message is too long to be sent as a whole, it will be split
+and the value of this option will be prepended to all but the first
+part. Use `nil` or `""` to omit the marker.
 
-Description
-: When a message is too long to be sent as a whole, it will be split
-  and the value of this option will be prepended to all but the first
-  parts of the message.
+## `modes`
 
-## modes
-Type
-: Array<String>
+- **Type** `Array<String>`
+- **Default** `[]`
 
-Default value
-: []
+User mode letters to set on the bot after registration, such as `["i"]`.
+Set this with `c.modes = [...]` in a configuration block. The current
+configuration class does not accept `:modes` through `[]` or `load`.
 
-Description
-: An array of modes the bot should set on itself after connecting.
+## `nick`
 
-## nick
-Type
-: String
+- **Type** `String`
+- **Default** `"ircinch"`
 
-Default value
-: `"cinch"`
+The nickname the bot will use.
 
-Description
-: The nickname the bot will use.
+**Notes**
 
-
-### Notes
-- If the nickname is in use, Cinch will append underscores until it
+- If the nickname is in use, IRCinch will append underscores until it
   finds a free nick.
 - You really should set this option instead of using the default.
 
-## nicks
-Type
-: Array<String>
+## `nicks`
 
-Default value
-: `nil`
+- **Type** `Array<String>`
+- **Default** `nil`
 
-Description
-: This option overrules {file:docs/bot_options.md#nick `nick`} and allows Cinch
-  to try multiple nicks before adding underscores.
+A nonempty list of preferred nicknames, tried in order before appending
+underscores. With `nil`, the bot starts with [`nick`](#nick).
 
+## `password`
 
-## password
-Type
-: String
+- **Type** `String`
+- **Default** `nil`
 
-Default value
-: `nil`
+Password sent with the IRC `PASS` command. For account authentication on a
+server that supports SASL, see [`sasl`](#sasl).
 
-Description
-: A server password for access to private servers.
+## `ping_interval`
 
+- **Type** `Numeric`
+- **Default** `120`
 
-### Notes
-- Some networks allow you to use the server password for
-  authenticating with services (e.g. NickServ).
+Interval in seconds between client `PING` commands.
 
+**Notes**
 
-## ping_interval
-Type
-: Number
-
-Default value
-: `120`
-
-Description
-: The server will be pinged every X seconds, to keep the connection
-  alive.
-
-
-### Notes
 - The ping interval should be smaller than
-  {file:docs/bot_options.md#timeoutsread `timeouts.read`} to prevent Cinch from
+  [`timeouts.read`](#timeoutsread) to prevent IRCinch from
   falsely declaring a connection dead.
 
+## `plugins`
 
-## plugins
+### `plugins.plugins`
 
-### plugins.plugins
-Type
-: Array<Class>
+- **Type** `Array<Class>`
+- **Default** `[]`
 
-Default value
-: `[]`
+A list of plugins to register.
 
-Description
-: A list of plugins to register.
+**Notes**
 
-
-#### Notes
 - An example: `[Plugin1, Plugin2, Plugin3]` -- Note that we are adding
   the plugin **classes** to the list.
 
-### plugins.prefix
-Type
-: String, Regexp, Lambda
+### `plugins.prefix`
 
-Default value
-: `/^!/`
+- **Type** `String`, `Regexp`, `Proc`, or `nil`
+- **Default** `/^!/`
 
-Description
-: A prefix that will be prepended to all plugin commands.
+Default prefix for plugin matchers. See [matching messages](plugins.md#matching-messages)
+for overrides and how strings and regular expressions are combined.
 
+### `plugins.suffix`
 
-### plugins.suffix
-Type
-: String, Regexp, Lambda
+- **Type** `String`, `Regexp`, `Proc`, or `nil`
+- **Default** `nil`
 
-Default value
-: `nil`
+Default suffix for plugin matchers.
 
-Description
-: A suffix that will be appended to all plugin commands.
+### `plugins.options`
 
+- **Type** `Hash`
+- **Default** `Hash.new {|h,k| h[k] = {}}`
 
+Options keyed by plugin class, with an empty hash for each class by default.
+See [plugin configuration](plugins.md#configuration).
 
-### plugins.options
-Type
-: Hash
+## `port`
 
-Default value
-: `Hash.new {|h,k| h[k] = {}}`
+- **Type** `Integer`
+- **Default** `6667`
 
-Description
-: Options specific to plugins.
+The port the IRC server is listening on. Set the server's TLS port when
+enabling [`ssl.use`](#ssluse).
 
+## `realname`
 
-#### Notes
-- Information on plugins and options for those will be made available
-  in a separate document soon.
+- **Type** `String`
+- **Default** `"ircinch"`
 
+The real name Cinch will connect with.
 
-## port
-Type
-: Fixnum
+## `reconnect`
 
-Default value
-: `6667`
+- **Type** `Boolean`
+- **Default** `true`
 
-Description
-: The port the IRC server is listening on
+Retry after connection failures or disconnects. Calling `bot.quit` disables
+reconnection for that run.
 
+## `sasl`
 
-## realname
-Type
-: String
+Set the username and password for an IRC account on a server that advertises
+SASL. Use TLS for `PLAIN`, which encodes the password without encrypting it.
+See [`ssl`](#ssl) for IRCinch's TLS settings and verification behavior.
 
-Default value
-: `"cinch"`
+### `sasl.username`
 
-Description
-: The real name Cinch will connect with.
+- **Type** `String`
+- **Default** `nil`
 
-## reconnect
-Type
-: Boolean
+The username to use for SASL authentication.
 
-Default value
-: `true`
+### `sasl.password`
 
-Description
-: Should Cinch attempt to reconnect after a connection loss?
+- **Type** `String`
+- **Default** `nil`
 
-## sasl
+The password to use for SASL authentication.
 
-### sasl.username
-Type
-: String
+### `sasl.mechanisms`
 
-Default value
-: `nil`
+- **Type** `Array<Cinch::SASL::Mechanism>`
+- **Default** `[Cinch::SASL::DhBlowfish, Cinch::SASL::Plain]`
 
-Description
-: The username to use for SASL authentication.
+Mechanisms to try in order. The bot tries the next one when the server sends
+numeric `904` (authentication failed). For a network using `PLAIN`, set this
+to `[Cinch::SASL::Plain]`.
 
-### sasl.password
-Type
-: String
+## `server`
 
-Default value
-: `nil`
+- **Type** `String`
+- **Default** `"localhost"`
 
-Description
-: The password to use for SASL authentication.
+The IRC server to connect to.
 
-### sasl.mechanisms
-Type
-: Array<Cinch::SASL::Mechanism>
+## `server_queue_size`
 
-Default value
-: `[Cinch::SASL::DhBlowfish, Cinch::SASL::Plain]`
+- **Type** Positive `Integer`
+- **Default** `nil`
 
-Description
-: The SASL mechanisms to use. All mechanisms in the array will be
-attempted, until one was successful
+Estimated number of pending commands the server can queue for this connection.
+`nil` uses the [network default](../lib/cinch/network.rb).
 
-## server
-Type
-: String
+**Notes**
 
-Default value
-: `"localhost"`
-
-Description
-: The IRC server to connect to
-
-
-## server_queue_size
-Type
-: Fixnum
-
-Default value
-: Network dependent
-
-Description
-: The number of incoming messages the server will queue, before
-  killing the bot for excess flood.
-
-
-### Notes
 - If your bot gets kicked for excess flood, try lowering the value of
   `server_queue_size`.
-- See also: {file:docs/bot_options.md#messagespersecond `messages_per_second`}
+- See also: [`messages_per_second`](#messages_per_second)
 
-## ssl
+## `ssl`
 
-### ssl.use
-Type
-: Boolean
+### `ssl.use`
 
-Default value
-: `false`
+- **Type** `Boolean`
+- **Default** `false`
 
-Description
-: Sets if SSL should be used
+Open the connection with TLS. Choose the network's TLS [`port`](#port) explicitly.
 
-### ssl.verify
-Type
-: Boolean
+### `ssl.verify`
 
-Default value
-: `false`
+- **Type** `Boolean`
+- **Default** `false`
 
-Description
-: Sets if the SSL certificate should be verified
+Enable verification of the server certificate chain. The current TLS
+implementation does not check whether the certificate matches the server
+hostname. See the [connection source](../lib/cinch/irc.rb) and
+[Ruby OpenSSL documentation](https://docs.ruby-lang.org/en/master/OpenSSL/SSL/SSLContext.html#attribute-i-verify_hostname).
 
+### `ssl.ca_path`
 
-### ssl.ca_path
-Type
-: String
+- **Type** `String`
+- **Default** `"/etc/ssl/certs"`
 
-Default value
-: `"/etc/ssl/certs"`
+The path to a directory with certificates. This has to be set
+  properly for [`ssl.verify`](#sslverify) to work.
 
-Description
-: The path to a directory with certificates. This has to be set
-  properly for {file:docs/bot_options.md#sslverify `ssl.verify`} to work.
+### `ssl.client_cert`
 
+- **Type** `String`
+- **Default** `nil`
 
-### ssl.client_cert
-Type
-: String
+Path to a PEM file containing both the client certificate and its RSA private
+key. Some networks use it for account authentication. See [OFTC’s CertFP guide](https://www.oftc.net/NickServ/CertFP/).
 
-Default value
-: `nil`
+## `shared`
 
-Description
-: The path to a client certificate, which some networks can use for
-  authentication (see {http://www.oftc.net/oftc/NickServ/CertFP})
+- **Type** `Hash`
+- **Default** `{}`
 
+Per-bot data accessible to plugin instances through `shared`. Use
+`synchronize` for updates that can run in concurrent handlers.
 
-#### Notes
-- You will want to set the correct port when using SSL
+## `strictness`
 
-## user
-Type
-: String
+- **Type** `:forgiving` or `:strict`
+- **Default** `:forgiving`
 
-Default value
-: `"cinch"`
+In strict mode, changing the bot's nickname or a channel topic, or kicking
+a user, raises an exception when the supplied value exceeds the server's
+advertised limit. In forgiving mode the request goes to the server.
 
-Description
-: The user name to use when connecting to the IRC server.
+## `timeouts`
 
-## timeouts
+### `timeouts.read`
 
-### timeouts.read
-Type
-: Number
+- **Type** `Numeric`
+- **Default** `240`
 
-Default value
-: `240`
+Socket read timeout in seconds. An expired read closes the connection.
 
-Description
-: If no data has been received for this amount of seconds, the
-  connection will be considered dead.
+### `timeouts.connect`
 
+- **Type** `Numeric`
+- **Default** `10`
 
-### timeouts.connect
-Type
-: Number
+Timeout in seconds for opening the TCP socket. The TLS handshake follows
+afterward.
 
-Default value
-: `10`
+## `user`
 
-Description
-: Give up connecting after this amount of seconds.
+- **Type** `String`
+- **Default** `"ircinch"`
 
-## default_logger_level
-Type
-: Symbol
-
-Default value
-: `:debug`
-
-Description
-: Modify the log level of the default logger, for instance, the bot will log very little if you set this value to `:fatal`.  
+The username sent with the IRC `USER` command. Set [`sasl.username`](#saslusername)
+separately for SASL authentication.

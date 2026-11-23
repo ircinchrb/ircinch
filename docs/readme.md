@@ -1,20 +1,22 @@
-# @title README
-# @markup kramdown
+# IRCinch Documentation
 
+- [Getting Started](getting_started.md)
+- [Plugins](plugins.md)
+- [Bot Options](bot_options.md)
+- [Events](events.md)
+- [Common Tasks](common_tasks.md)
+- [Common Mistakes](common_mistakes.md)
+- [Encodings](encodings.md)
+- [Logging](logging.md)
 
-- {file:docs/changes.md Changelog}
-- {file:docs/migrating.md Migration guides}
+## Messaging and Transfers
 
-# Important documents
+- [DCC File Transfers](common_tasks.md#dcc-file-transfers)
+- [SASL Authentication](bot_options.md#sasl)
+- [Formatting Messages](common_tasks.md#formatting-messages)
 
-The following is a list of important documents to read.
+## Release History
 
-- {file:docs/bot_options.md Bot options}
-- {file:docs/common_tasks.md Common Tasks}
-- {file:docs/common_mistakes.md Common mistakes}
-- {Cinch::DCC DCC}
-- {file:docs/encodings.md Encodings}
-- {file:docs/logging.md Logging}
-- {Cinch::SASL SASL}
-- {Cinch::Formatting Formatting messages}
-- {file:docs/events.md Events}
+- [IRCinch Changelog](../CHANGELOG.md)
+- [Historical Cinch Changelog](changes.md)
+- [Cinch Migration Guide](migrating.md)

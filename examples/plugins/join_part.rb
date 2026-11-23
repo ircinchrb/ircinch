@@ -1,39 +1,26 @@
-require "ircinch"
+# frozen_string_literal: true
+
+require_relative "../settings"
 
 class JoinPart
   include Cinch::Plugin
 
-  match(/join (.+)/, method: :join)
-  match(/part(?: (.+))?/, method: :part)
-
-  def initialize(*args)
-    super
-
-    @admins = ["injekt", "DominikH"]
-  end
-
-  def check_user(user)
-    user.refresh # be sure to refresh the data, or someone could steal the nick
-    @admins.include?(user.authname)
-  end
+  match(/join ([#&][^\s,]+)\z/, method: :join)
+  match(/part(?: ([#&][^\s,]+))?\z/, method: :part)
 
   def join(m, channel)
-    return unless check_user(m.user)
-    Channel(channel).join
+    bot.join(channel) if ExampleSettings.admin?(m)
   end
 
   def part(m, channel)
-    return unless check_user(m.user)
     channel ||= m.channel
-    Channel(channel).part if channel
+    bot.part(channel) if channel && ExampleSettings.admin?(m)
   end
 end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server = "irc.libera.chat"
-    c.nick = "IrCinchBot"
-    c.channels = ["#ircinch-bots"]
+    ExampleSettings.configure(c, "irc_pjoin")
     c.plugins.plugins = [JoinPart]
   end
 end

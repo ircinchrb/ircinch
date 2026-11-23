@@ -1,36 +1,37 @@
-require "ircinch"
+# frozen_string_literal: true
 
-# Give this bot ops in a channel and it'll auto voice
-# visitors
-#
-# Enable with !autovoice on
-# Disable with !autovoice off
+require_relative "../settings"
 
+# Give the bot +o in the channel. A channel operator can toggle autovoice.
 class Autovoice
   include Cinch::Plugin
 
   listen_to :join
-  match(/autovoice (on|off)$/)
+  match(/autovoice (on|off)\z/)
+
+  def initialize(bot)
+    super
+    @enabled_channels = {}
+  end
 
   def listen(m)
-    unless m.user.nick == bot.nick
-      m.channel.voice(m.user) if @autovoice
-    end
+    channel = m.channel
+    enabled = synchronize(:autovoice) { @enabled_channels[channel] }
+    channel.voice(m.user) if enabled && m.user != bot && channel.opped?(bot)
   end
 
   def execute(m, option)
-    @autovoice = option == "on"
+    return unless m.user && m.channel&.opped?(m.user)
 
-    m.reply "Autovoice is now #{@autovoice ? "enabled" : "disabled"}"
+    enabled = option == "on"
+    synchronize(:autovoice) { @enabled_channels[m.channel] = enabled }
+    m.reply "Autovoice is now #{enabled ? "enabled" : "disabled"}."
   end
 end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.nick = "ircinch_autovoice"
-    c.server = "irc.libera.chat"
-    c.channels = ["#ircinch-bots"]
-    c.verbose = true
+    ExampleSettings.configure(c, "irc_pvoic")
     c.plugins.plugins = [Autovoice]
   end
 end

@@ -1,35 +1,21 @@
-require "cgi"
-require "ircinch"
-require "nokogiri"
-require "open-uri"
+# frozen_string_literal: true
+
+require_relative "../settings"
+require "uri"
 
 class Google
   include Cinch::Plugin
 
-  match(/google (.+)/)
-
-  def search(query)
-    url = "http://www.google.com/search?q=#{CGI.escape(query)}"
-    res = Nokogiri.HTML(URI.parse(url).open).at("h3.r")
-
-    title = res.text
-    link = res.at("a")[:href]
-    desc = res.at("./following::div").children.first.text
-    CGI.unescape_html "#{title} - #{desc} (#{link})"
-  rescue
-    "No results found"
-  end
+  match(/google (.+)\z/)
 
   def execute(m, query)
-    m.reply(search(query))
+    m.reply "https://www.google.com/search?#{URI.encode_www_form(q: query)}"
   end
 end
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server = "irc.libera.chat"
-    c.nick = "MrIrCinch"
-    c.channels = ["#ircinch-bots"]
+    ExampleSettings.configure(c, "irc_pgoog")
     c.plugins.plugins = [Google]
   end
 end

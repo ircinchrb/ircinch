@@ -1,34 +1,21 @@
-require "cgi"
-require "ircinch"
-require "nokogiri"
-require "open-uri"
+# frozen_string_literal: true
+
+require_relative "../settings"
+require "uri"
 
 bot = Cinch::Bot.new do
   configure do |c|
-    c.server = "irc.libera.chat"
-    c.nick = "MrIrCinch"
-    c.channels = ["#ircinch-bots"]
+    ExampleSettings.configure(c, "irc_goog")
   end
 
   helpers do
-    # Extremely basic method, grabs the first result returned by Google
-    # or "No results found" otherwise
-    def google(query)
-      url = "http://www.google.com/search?q=#{CGI.escape(query)}"
-      res = Nokogiri.HTML(URI.parse(url).open).at("h3.r")
-
-      title = res.text
-      link = res.at("a")[:href]
-      desc = res.at("./following::div").children.first.text
-    rescue
-      "No results found"
-    else
-      CGI.unescape_html "#{title} - #{desc} (#{link})"
+    def google_link(query)
+      "https://www.google.com/search?#{URI.encode_www_form(q: query)}"
     end
   end
 
-  on :message, /^!google (.+)/ do |m, query|
-    m.reply google(query)
+  on :message, /\A!google (.+)\z/ do |m, query|
+    m.reply google_link(query)
   end
 end
 

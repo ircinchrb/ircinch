@@ -1,90 +1,82 @@
-# @title Logging
-# @markup kramdown
+# Logging
 
-# Using the logger
+## Using the logger
 
-Plugins can use the logging facility for logging their own messages,
-either by using the logging related helper methods (#debug, #info, and
-so on) or by directly interfacing with {Cinch::LoggerList}, which is
-available via `@bot.loggers`.
+Use `debug`, `info`, `warn`, `error`, and `fatal` in plugins and `on` handlers.
+The helpers send messages to [`bot.loggers`](../lib/cinch/logger_list.rb).
 
-Example:
+```ruby
+on :join do |m|
+  info "#{m.user} joined #{m.channel}"
+end
+```
 
-    class MyPlugin
-      include Cinch::Plugin
+## Logger levels
 
-      match "foo"
-      def execute(m)
-        debug "Starting handler..."
-        info  "Some more important information"
-        debug "Done."
-      end
+From most verbose to least verbose, the levels are `:debug`, `:log`,
+`:info`, `:warn`, `:error`, and `:fatal`. A logger emits messages at or above
+its configured level. `:debug` is the initial level. `:log` still includes
+raw incoming and outgoing IRC traffic. Use `:info` or higher to omit that
+traffic from normal logging.
+
+### Changing the level
+
+The bot starts with one formatted logger on standard error. Assign `level`
+on a logger to change its threshold. Assign `bot.loggers.level` to change
+all loggers already in the list. Set the level of each logger when you add it.
+
+```ruby
+bot.loggers.first.level = :info
+file = File.open("ircinch.log", "a")
+bot.loggers << Cinch::Logger::FormattedLogger.new(file, level: :warn)
+```
+
+Keep the file open while the bot is using it and close it after the bot stops.
+The [formatted logger](../lib/cinch/logger/formatted_logger.rb) adds timestamps
+and uses color on a terminal. For incoming IRC lines in pisg's Zcbot format,
+load `require "cinch/logger/zcbot_logger"` and add a
+[`Cinch::Logger::ZcbotLogger`](../lib/cinch/logger/zcbot_logger.rb) to the list.
+
+## Log filtering
+
+Add an object with a `filter(message, event)` method to `bot.loggers.filters`.
+Return the message to keep it, a replacement string to modify it, or `nil`
+to drop it. Filters run in order. Calls to `bot.loggers.exception` bypass them.
+
+```ruby
+class AuthenticationFilter
+  def filter(message, event)
+    if event == :outgoing && message.match?(/\A(?:PASS|OPER|AUTHENTICATE)(?:\s|\z)/)
+      return "[outgoing authentication command redacted]"
     end
 
-# Logger levels
+    message
+  end
+end
 
-Cinch uses a priority-based logging system, using the types `:debug`,
-`:log`, `:info`, `:warn`, `:error` and `:fatal`, each of them
-displaying less information than the previous.
+bot.loggers.filters << AuthenticationFilter.new
+```
 
-By default, the logging level to display is set to `:debug`, which
-will include all possible kinds of log events, including the rather
-verbose debug output caused by plugins.
+This filter covers the listed outgoing commands. Other events, including
+handler errors and failed writes, can still contain sensitive text. Avoid
+logging secrets from application code.
 
-`:log` will hide debug output but still contain the raw IRC log and
-from there on, the levels are rather self-explanatory.
+## Writing your own logger
 
-## Changing the level
+Subclass [`Cinch::Logger`](../lib/cinch/logger.rb) and override private
+formatters such as `format_general(message)` for all messages or
+`format_info(message)` for a particular event. The base class applies the
+level threshold, serializes writes, and sends the result to the supplied
+output object. An event-specific formatter can return `nil` to skip a message.
 
-The level can be changed for single loggers or all loggers at once, by either using {Cinch::Logger#level=} or {Cinch::LoggerList#level=} respectively.
+```ruby
+class ServiceLogger < Cinch::Logger
+  private
 
-Example:
+  def format_info(message)
+    "[service] #{message}"
+  end
+end
 
-    bot = Cinch::Bot.new { }
-    bot.loggers << Cinch::Logger::FormattedLogger.new(File.open("/tmp/log.log", "a"))
-    bot.loggers.level = :debug
-    bot.loggers.first.level  = :info
-
-This will set all loggers to the `:debug` level (which actually is the
-default already) and the first logger (which is the default STDOUT
-logger) to `:info`.
-
-# Log filtering
-
-Sometimes it is undesirable to log a message unchanged. For example
-when identifying to the network, passwords might be sent in plain
-text. To prevent such information from appearing in logs, {Cinch::LogFilter log filters}
-can be employed.
-
-Log filters take a log message as input and return a new message. This
-allows removing/masking out passwords or other undesired information.
-Additionally, messages can be dropped entirely by returning nil.
-
-It is possible to use more than one filter, in which case they will be
-called in order, each acting on the previous filter's output.
-
-Filters can be installed by adding them to {Cinch::LoggerList#filters}.
-
-An example (and very simple) password filter might look like this:
-
-    class PasswordFilter
-      def initialize(bot)
-        @bot = bot
-      end
-
-      def filter(message, event)
-        message.gsub(@bot.config.password, "*" * @bot.config.password.size)
-      end
-    end
-
-This filter will replace the password in all log messages (except for
-exceptions). It could further discriminate by looking at `event` and
-only modify outgoing IRC messages. It could also use the
-{Cinch::Message} class to parse the message and only operate on the
-actual message component, not channel names and similar. How fancy
-your filtering needs to be depends on you.
-
-# Writing your own logger
-
-This section will follow soon. For now just look at the code of
-already implemented loggers.
+bot.loggers << ServiceLogger.new($stderr, level: :info)
+```
