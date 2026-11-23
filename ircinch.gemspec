@@ -15,11 +15,10 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = ">= 3.3.0"
 
   spec.metadata = {
-    "bug_tracker_uri" => "https://github.com/ircinchrb/ircinch/issues",
-    "changelog_uri" => "https://github.com/ircinchrb/ircinch/blob/main/CHANGELOG.md",
+    "bug_tracker_uri" => "#{spec.homepage}/issues",
+    "changelog_uri" => "#{spec.homepage}/blob/main/CHANGELOG.md",
     "documentation_uri" => "https://rubydoc.info/gems/ircinch",
-    "homepage_uri" => spec.homepage,
-    "source_code_uri" => "https://github.com/ircinchrb/ircinch",
+    "source_code_uri" => spec.homepage,
     "rubygems_mfa_required" => "true"
   }
 
@@ -35,10 +34,10 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Register runtime dependencies (gems required to run this gem)
+  spec.add_dependency "base64"
   spec.add_dependency "ostruct"
 
   # Register development dependencies (gems required to program this gem)
-  spec.add_development_dependency "base64"
   spec.add_development_dependency "bundler-audit"
   spec.add_development_dependency "bundler-integrity"
   spec.add_development_dependency "irb"

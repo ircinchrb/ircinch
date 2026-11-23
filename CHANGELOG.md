@@ -4,6 +4,7 @@
   - Remove obsolete Float::INFINITY fallback
   - Bump minimum supported Ruby version to 3.3.0
   - Use monotonic timing for reconnect waits and message throttling
+  - Add base64 as a runtime dependency for forward compatibility
   - Minor performance improvements
   - Refresh documentation and examples
 
