@@ -2,7 +2,6 @@
 
 require_relative "../../../test_helper"
 require "cinch/logger/formatted_logger"
-require "stringio"
 
 class FormattedLoggerTest < TestCase
   def setup

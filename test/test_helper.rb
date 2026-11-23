@@ -7,6 +7,7 @@ $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 
 require "ircinch"
 
+require "stringio"
 require "minitest/autorun"
 
 class TestCase < Minitest::Test
