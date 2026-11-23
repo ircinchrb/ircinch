@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = "A simple, friendly Ruby DSL for creating IRC bots"
   spec.homepage = "https://github.com/ircinchrb/ircinch"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.2.0"
+  spec.required_ruby_version = ">= 3.3.0"
 
   spec.metadata = {
     "bug_tracker_uri" => "https://github.com/ircinchrb/ircinch/issues",

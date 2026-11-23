@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['head', '4.1.0-preview1', '4.0', '3.4', '3.3', 'jruby']
+        ruby: ['head', '4.1.0-preview1', '4.0', '3.4', '3.3', 'jruby', 'truffleruby']
 
     continue-on-error: ${{ matrix.ruby == 'head' }}
 
@@ -38,7 +38,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: standardrb lint code for consistent style
-        if: matrix.ruby != 'jruby'
+        if: matrix.ruby == '4.0'
         run: bundle exec standardrb
 
       - name: bundle-audit patch-level verification for gem
