@@ -133,13 +133,15 @@ end
 
 class TargetTest < TestCase
   class MockIRC
-    attr_reader :sends, :isupport
+    attr_reader :sends, :isupport, :sensitive_sends
     def initialize
       @sends = []
+      @sensitive_sends = []
       @isupport = {"CASEMAPPING" => :rfc1459, "CHANTYPES" => ["#"]}
     end
 
-    def send(msg)
+    def send(msg, sensitive: false)
+      @sensitive_sends << msg if sensitive
       @sends << msg
     end
   end
@@ -172,6 +174,14 @@ class TargetTest < TestCase
   test "send uses NOTICE when requested" do
     @target.send(:hello, true)
     assert_equal "NOTICE target :hello", @bot.irc.sends.last
+  end
+
+  test "send marks every chunk and line of a sensitive notice" do
+    @target.send("#{"a" * 600}\nsecret", true, sensitive: true)
+
+    assert_equal 3, @bot.irc.sends.size
+    assert_equal "NOTICE target :secret", @bot.irc.sends.last
+    assert_equal @bot.irc.sends, @bot.irc.sensitive_sends
   end
 
   test "send splits long messages" do

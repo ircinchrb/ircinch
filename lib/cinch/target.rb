@@ -17,21 +17,23 @@ module Cinch
     # Sends a NOTICE to the target.
     #
     # @param [#to_s] text the message to send
+    # @param [Boolean] sensitive replace the message in logs with a placeholder
     # @return [void]
     # @see #safe_notice
-    def notice(text)
-      send(text, true)
+    def notice(text, **options)
+      send(text, true, **options)
     end
 
     # Sends a PRIVMSG to the target.
     #
     # @param [#to_s] text the message to send
     # @param [Boolean] notice Use NOTICE instead of PRIVMSG?
+    # @param [Boolean] sensitive replace the message in logs with a placeholder
     # @return [void]
     # @see #safe_msg
     # @note The aliases `msg` and `privmsg` are deprecated and will be
     #   removed in a future version.
-    def send(text, notice = false)
+    def send(text, notice = false, sensitive: false)
       # TODO deprecate `notice` argument, put splitting into own
       # method
       text = text.to_s
@@ -39,26 +41,27 @@ module Cinch
       split_end = @bot.config.message_split_end || ""
       command = notice ? "NOTICE" : "PRIVMSG"
       prefix = ":#{@bot.mask} #{command} #{@name} :"
+      options = sensitive ? {sensitive: true} : {}
 
       text.lines.map(&:chomp).each do |line|
         splitted = split_message(line, prefix, split_start, split_end)
 
         splitted[0, (@bot.config.max_messages || splitted.size)].each do |string|
-          @bot.irc.send("#{command} #{@name} :#{string}")
+          @bot.irc.send("#{command} #{@name} :#{string}", **options)
         end
       end
     end
 
     # @deprecated
-    def msg(*args)
+    def msg(...)
       Cinch::Utilities::Deprecation.print_deprecation("2.2.0", "Target#msg", "Target#send")
-      send(*args)
+      send(...)
     end
 
     # @deprecated
-    def privmsg(*args)
+    def privmsg(...)
       Cinch::Utilities::Deprecation.print_deprecation("2.2.0", "Target#privmsg", "Target#send")
-      send(*args)
+      send(...)
     end
 
     # Like {#send}, but remove any non-printable characters from
@@ -73,20 +76,20 @@ module Cinch
     # @return (see #send)
     # @param (see #send)
     # @see #send
-    def safe_send(text, notice = false)
-      send(Cinch::Helpers.sanitize(text), notice)
+    def safe_send(text, notice = false, **options)
+      send(Cinch::Helpers.sanitize(text), notice, **options)
     end
 
     # @deprecated
-    def safe_msg(*args)
+    def safe_msg(...)
       Cinch::Utilities::Deprecation.print_deprecation("2.2.0", "Target#safe_msg", "Target#safe_send")
-      safe_send(*args)
+      safe_send(...)
     end
 
     # @deprecated
-    def safe_privmsg(*args)
+    def safe_privmsg(...)
       Cinch::Utilities::Deprecation.print_deprecation("2.2.0", "Target#safe_privmsg", "Target#safe_send")
-      safe_send(*args)
+      safe_send(...)
     end
 
     # Like {#safe_msg} but for notices.
@@ -95,8 +98,8 @@ module Cinch
     # @param (see #safe_msg)
     # @see #safe_notice
     # @see #notice
-    def safe_notice(text)
-      safe_send(text, true)
+    def safe_notice(text, **options)
+      safe_send(text, true, **options)
     end
 
     # Invoke an action (/me) in/to the target.

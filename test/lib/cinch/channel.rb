@@ -22,14 +22,16 @@ class ChannelTest < TestCase
   end
 
   class MockIRC
-    attr_reader :sent, :network, :isupport
+    attr_reader :sent, :network, :isupport, :sensitive_sends
     def initialize
       @sent = []
+      @sensitive_sends = []
       @network = MockNetwork.new
       @isupport = MockISupport.new
     end
 
-    def send(msg)
+    def send(msg, sensitive: false)
+      @sensitive_sends << msg if sensitive
       @sent << msg
     end
   end
@@ -218,6 +220,15 @@ class ChannelTest < TestCase
     @bot.irc.sent.clear
     @channel.join
     assert_includes @bot.irc.sent, "JOIN #channel"
+    assert_equal ["JOIN #channel key"], @bot.irc.sensitive_sends
+  end
+
+  test "setting and removing the channel key sends sensitive MODE commands" do
+    @channel.key = "key"
+    @channel.instance_variable_get(:@modes)["k"] = "key"
+    @channel.key = nil
+
+    assert_equal ["MODE #channel +k key", "MODE #channel -k key"], @bot.irc.sensitive_sends
   end
 
   test "remove sends REMOVE" do
@@ -228,25 +239,9 @@ class ChannelTest < TestCase
 
   test "send strips formatting if +c mode set" do
     @channel.instance_variable_get(:@modes)["c"] = true
-    @channel.send(:"\x0304colored\x03")
+    @channel.send(:"\x0304colored\x03", sensitive: true)
 
-    # Target#send -> @bot.irc.send "PRIVMSG ..."
-    # We verify that it called @bot.irc.send with stripped text
-    # But Channel#send calls super, which is Target#send.
-    # Target#send calls @bot.irc.send.
-    # Wait, Target is not in this test file, we mock @bot.irc.send?
-    # Actually Channel inherits Target.
-    # Target#send implementation:
-    # def send(text, notice = false)
-    #   ...
-    #   @bot.irc.send("PRIVMSG ... :#{text}")
-    # end
-
-    # Check if we can intercept implicit super call?
-    # We rely on @bot.irc.sent getting the message.
-
-    msg = @bot.irc.sent.last
-    assert_match(/PRIVMSG #channel :colored/, msg)
-    refute_match(/\x03/, msg)
+    assert_equal "PRIVMSG #channel :colored", @bot.irc.sent.last
+    assert_equal @bot.irc.sent.last, @bot.irc.sensitive_sends.last
   end
 end

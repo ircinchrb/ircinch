@@ -37,29 +37,25 @@ and uses color on a terminal. For incoming IRC lines in pisg's Zcbot format,
 load `require "cinch/logger/zcbot_logger"` and add a
 [`Cinch::Logger::ZcbotLogger`](../lib/cinch/logger/zcbot_logger.rb) to the list.
 
+## Redacting outgoing messages
+
+Pass `sensitive: true` to `Target#send` or `IRC#send` to log `[REDACTED]`
+in place of the outgoing line. The flag applies to successful sends,
+failed-write log messages, and each line of a split target message.
+The server receives the original IRC command.
+
+```ruby
+User("NickServ").send("IDENTIFY #{password}", sensitive: true)
+```
+
+IRCinch applies the flag to server passwords, SASL responses, oper passwords,
+and channel keys sent by the built-in helpers.
+
 ## Log filtering
 
 Add an object with a `filter(message, event)` method to `bot.loggers.filters`.
 Return the message to keep it, a replacement string to modify it, or `nil`
 to drop it. Filters run in order. Calls to `bot.loggers.exception` bypass them.
-
-```ruby
-class AuthenticationFilter
-  def filter(message, event)
-    if event == :outgoing && message.match?(/\A(?:PASS|OPER|AUTHENTICATE)(?:\s|\z)/)
-      return "[outgoing authentication command redacted]"
-    end
-
-    message
-  end
-end
-
-bot.loggers.filters << AuthenticationFilter.new
-```
-
-This filter covers the listed outgoing commands. Other events, including
-handler errors and failed writes, can still contain sensitive text. Avoid
-logging secrets from application code.
 
 ## Writing your own logger
 

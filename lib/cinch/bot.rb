@@ -437,7 +437,7 @@ module Cinch
     # @return [void]
     def oper(password, user = nil)
       user ||= nick
-      @irc.send "OPER #{user} #{password}"
+      @irc.send "OPER #{user} #{password}", sensitive: true
     end
 
     # Try to create a free nick, first by cycling through all

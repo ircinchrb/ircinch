@@ -142,7 +142,7 @@ module Cinch
     # @return [void]
     # @since 2.0.0
     def send_login
-      send "PASS #{@bot.config.password}" if @bot.config.password
+      send "PASS #{@bot.config.password}", sensitive: true if @bot.config.password
       send "NICK #{@bot.generate_next_nick!}"
       send "USER #{@bot.config.user} 0 * :#{@bot.config.realname}"
     end
@@ -289,9 +289,10 @@ module Cinch
 
     # Send a message to the server.
     # @param [String] msg
+    # @param [Boolean] sensitive replace the message in logs with a placeholder
     # @return [void]
-    def send(msg)
-      @queue.queue(msg)
+    def send(msg, sensitive: false)
+      @queue.queue(msg, sensitive: sensitive)
     end
 
     private
@@ -922,9 +923,10 @@ module Cinch
 
     # @since 2.0.0
     def on_authenticate(msg, events)
-      send "AUTHENTICATE " + @sasl_current_method.generate(@bot.config.sasl.username,
+      payload = @sasl_current_method.generate(@bot.config.sasl.username,
         @bot.config.sasl.password,
         msg.params.last)
+      send "AUTHENTICATE " + payload, sensitive: true
     end
   end
 end

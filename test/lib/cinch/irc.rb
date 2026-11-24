@@ -6,7 +6,7 @@ require "cinch/irc"
 class IRCTest < TestCase
   class MockConfiguration
     attr_reader :timeouts, :ssl
-    attr_accessor :server, :port, :local_host, :password, :nick, :user, :realname, :encoding, :modes
+    attr_accessor :server, :port, :local_host, :password, :nick, :user, :realname, :encoding, :modes, :sasl
 
     def initialize
       @timeouts = OpenStruct.new(connect: 10, read: 10)
@@ -53,7 +53,14 @@ class IRCTest < TestCase
   end
 
   class MockQueue
-    def queue(msg)
+    attr_reader :messages
+
+    def initialize
+      @messages = []
+    end
+
+    def queue(msg, sensitive: false)
+      @messages << [msg, sensitive]
     end
   end
 
@@ -136,23 +143,20 @@ class IRCTest < TestCase
     @bot.config.nick = "bot"
     @bot.config.user = "user"
     @bot.config.realname = "Real Name"
-    # Generate next nick relies on config nicks or single nick
-
-    # We need to spy on 'send'. The existing MockSocket approach is for 'connect'.
-    # 'send' calls @queue.queue(msg).
-    # We can stub @irc.send or look at @queue?
-    # @irc.instance_variable_get(:@queue) is nil because connect wasn't called.
-    # IRCTest#setup calls IRC.new but not connect.
-
-    # Let's stub send on @irc.
-    sent = []
-    @irc.define_singleton_method(:send) { |msg| sent << msg }
-
     @irc.__send__(:send_login)
 
-    assert_includes sent, "PASS secret"
-    assert_includes sent, "NICK bot"
-    assert_includes sent, "USER user 0 * :Real Name"
+    assert_equal [["PASS secret", true], ["NICK bot", false], ["USER user 0 * :Real Name", false]], @queue.messages
+  end
+
+  test "SASL marks the authentication response as sensitive" do
+    @bot.config.sasl = OpenStruct.new(username: "bot", password: "secret")
+    @irc.instance_variable_set(:@sasl_remaining_methods, [Cinch::SASL::Plain])
+
+    @irc.send_sasl
+    @irc.parse("AUTHENTICATE +")
+
+    payload = Base64.strict_encode64("bot\0bot\0secret")
+    assert_equal [["AUTHENTICATE PLAIN", false], ["AUTHENTICATE #{payload}", true]], @queue.messages
   end
 
   test "send_cap_ls sends CAP LS" do
@@ -295,7 +299,8 @@ class IRCTest < TestCase
     @bot = MockBot.new
     @irc = Cinch::IRC.new(@bot)
     @bot.irc = @irc
-    @irc.instance_variable_set(:@queue, MockQueue.new)
+    @queue = MockQueue.new
+    @irc.instance_variable_set(:@queue, @queue)
     @irc.setup
   end
 

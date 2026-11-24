@@ -55,11 +55,15 @@ class MessageQueueTest < TestCase
     assert_empty queues[:generic]
   end
 
-  test "process_one writes to socket" do
+  test "process_one writes to socket and redacts only sensitive messages in outgoing logs" do
+    outgoing = []
+    @bot.loggers.define_singleton_method(:outgoing) { |msg| outgoing << msg }
+    @queue.queue("PASS secret", sensitive: true)
     @queue.queue("PING :foo")
-    @queue.send(:process_one)
+    2.times { @queue.send(:process_one) }
 
-    assert_equal "PING :foo\r\n", @socket.writes.last
+    assert_equal ["PASS secret\r\n", "PING :foo\r\n"], @socket.writes
+    assert_equal ["[REDACTED]", "PING :foo"], outgoing
   end
 
   test "process_one encodes outgoing message" do
@@ -130,9 +134,13 @@ class MessageQueueTest < TestCase
     errors = []
     @bot.loggers.define_singleton_method(:error) { |msg| errors << msg }
 
+    @queue.queue("PASS secret", sensitive: true)
     @queue.queue("PING :foo")
-    @queue.send(:process_one)
+    2.times { @queue.send(:process_one) }
 
-    assert_includes errors.join, "Could not send message"
+    assert_equal [
+      "Could not send message (connectivity problems): [REDACTED]",
+      "Could not send message (connectivity problems): PING :foo"
+    ], errors
   end
 end

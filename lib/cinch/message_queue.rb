@@ -19,8 +19,10 @@ module Cinch
       @log = []
     end
 
+    # @param [String] message
+    # @param [Boolean] sensitive replace the message in logs with a placeholder
     # @return [void]
-    def queue(message)
+    def queue(message, sensitive: false)
       command, target, _ = message.split(" ", 3)
 
       queue = nil
@@ -39,7 +41,7 @@ module Cinch
       else
         queue = @queues[:generic]
       end
-      queue << message
+      queue << [message, sensitive]
 
       @mutex.synchronize do
         unless @queued_queues.include?(queue)
@@ -79,7 +81,9 @@ module Cinch
 
     def process_one
       queue = @queues_to_process.pop
-      message = queue.pop.to_s.each_line.first.chomp
+      message, sensitive = queue.pop
+      message = message.to_s.each_line.first.chomp
+      log_message = sensitive ? +"[REDACTED]" : message
 
       if queue.empty?
         @mutex.synchronize do
@@ -93,11 +97,11 @@ module Cinch
         to_send = Cinch::Utilities::Encoding.encode_outgoing(message, @bot.config.encoding)
         @socket.write(to_send + "\r\n")
         @log << Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        @bot.loggers.outgoing(message)
+        @bot.loggers.outgoing(log_message)
 
         @time_since_last_send = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       rescue IOError
-        @bot.loggers.error "Could not send message (connectivity problems): #{message}"
+        @bot.loggers.error "Could not send message (connectivity problems): #{log_message}"
       end
     end
   end

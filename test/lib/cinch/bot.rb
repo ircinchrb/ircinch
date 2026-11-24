@@ -131,6 +131,11 @@ class BotTest < TestCase
   end
 
   test "oper sends OPER" do
+    sensitive_sends = []
+    @mock_irc.define_singleton_method(:send) do |msg, sensitive: false|
+      sent << msg
+      sensitive_sends << msg if sensitive
+    end
     @bot.config.nick = "bot"
     @bot.oper("pass")
     assert_includes @mock_irc.sent, "OPER bot pass"
@@ -138,6 +143,7 @@ class BotTest < TestCase
     @mock_irc.sent.clear
     @bot.oper("pass", "user")
     assert_includes @mock_irc.sent, "OPER user pass"
+    assert_equal ["OPER bot pass", "OPER user pass"], sensitive_sends
   end
 
   test "set_mode/unset_mode sends MODE" do

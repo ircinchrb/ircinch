@@ -213,9 +213,9 @@ module Cinch
 
     def key=(new_key)
       if new_key.nil?
-        mode "-k #{key}"
+        mode "-k #{key}", sensitive: true
       else
-        mode "+k #{new_key}"
+        mode "+k #{new_key}", sensitive: true
       end
     end
 
@@ -353,11 +353,12 @@ module Cinch
     # use setter methods like {Channel#invite_only=}.
     #
     # @param [String] s a mode string
+    # @param [Boolean] sensitive replace the message in logs with a placeholder
     # @return [void]
     # @example
     #   channel.mode "+n"
-    def mode(s)
-      @bot.irc.send "MODE #{@name} #{s}"
+    def mode(s, **options)
+      @bot.irc.send("MODE #{@name} #{s}", **options)
     end
 
     # Causes the bot to part from the channel.
@@ -377,7 +378,8 @@ module Cinch
       if key.nil? && self.key != true
         key = self.key
       end
-      @bot.irc.send "JOIN #{[@name, key].compact.join(" ")}"
+      options = key.nil? ? {} : {sensitive: true}
+      @bot.irc.send("JOIN #{[@name, key].compact.join(" ")}", **options)
     end
 
     # @endgroup
@@ -407,7 +409,7 @@ module Cinch
 
     # @note The aliases `msg` and `privmsg` are deprecated and will be
     #   removed in a future version.
-    def send(text, notice = false)
+    def send(text, notice = false, sensitive: false)
       # TODO deprecate 'notice' argument
       text = text.to_s
       if @modes["c"]
@@ -419,15 +421,15 @@ module Cinch
     end
 
     # @deprecated
-    def msg(*args)
+    def msg(...)
       Cinch::Utilities::Deprecation.print_deprecation("2.2.0", "Channel#msg", "Channel#send")
-      send(*args)
+      send(...)
     end
 
     # @deprecated
-    def privmsg(*args)
+    def privmsg(...)
       Cinch::Utilities::Deprecation.print_deprecation("2.2.0", "Channel#privmsg", "Channel#send")
-      send(*args)
+      send(...)
     end
 
     # @return [Fixnum]
