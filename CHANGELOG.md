@@ -1,4 +1,4 @@
-* Unreleased
+* IRCinch 2.4.6, 23 November 2026
   - Add JRuby, TruffleRuby, and Ruby 4.1.0-preview1 to CI matrix
   - Remove Ruby 3.2 from CI matrix
   - Remove obsolete Float::INFINITY fallback
