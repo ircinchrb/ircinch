@@ -1,7 +1,6 @@
-## Unreleased
-
-- Add an optional `sensitive: true` flag to the send API. The message queue uses `[REDACTED]` in outgoing and send-error logs and sends the original message to the server.
-- Mark server passwords, SASL responses, oper passwords, and channel keys sent by built-in helpers as sensitive.
+* Unreleased
+  - Add an optional `sensitive: true` flag to the send API. The message queue uses `[REDACTED]` in outgoing and send-error logs and sends the original message to the server.
+  - Mark server passwords, SASL responses, oper passwords, and channel keys sent by built-in helpers as sensitive.
 
 * IRCinch 2.4.6, 23 November 2026
   - Add JRuby, TruffleRuby, and Ruby 4.1.0-preview1 to CI matrix
